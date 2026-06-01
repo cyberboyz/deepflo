@@ -559,7 +559,10 @@
     <div>
       <div class="section-title">Instrument</div>
       <div class="instrument-grid" id="instrGrid">
-        <button class="instr-btn active" data-instr="sine">
+        <button class="instr-btn active" data-instr="solfeggio">
+          <span class="emoji">🔮</span>Solfeggio
+        </button>
+        <button class="instr-btn" data-instr="sine">
           <span class="emoji">〰️</span>Sine Tone
         </button>
         <button class="instr-btn" data-instr="bell">
@@ -583,9 +586,6 @@
         <button class="instr-btn" data-instr="harp">
           <span class="emoji">🎶</span>Harp Glide
         </button>
-        <button class="instr-btn" data-instr="solfeggio">
-          <span class="emoji">🔮</span>Solfeggio
-        </button>
         <button class="instr-btn" data-instr="piano">
           <span class="emoji">🎹</span>Piano
         </button>
@@ -607,7 +607,7 @@
       </div>
 
       <!-- Solfeggio picker — shown only when solfeggio selected -->
-      <div id="solfeggioPanel" style="display:none;margin-top:10px;">
+      <div id="solfeggioPanel" style="display:block;margin-top:10px;">
         <div class="section-title" style="margin-bottom:6px;">Solfeggio frequency</div>
         <div style="display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px 10px;margin-bottom:8px;">
           <span style="font-size:.75rem;color:var(--inhale);">↑ Inhale</span>
@@ -1284,7 +1284,7 @@ let phaseStart   = 0;      // AudioContext time when phase began
 let phaseIndex   = 0;
 let cycleCount   = 0;
 let phases       = [];
-let currentInstr = 'sine';
+let currentInstr = 'solfeggio';
 
 const PHASE_COLORS = {
   inhale: '#56d364',
@@ -1446,6 +1446,15 @@ document.getElementById('startBtn').addEventListener('click', () => {
 // Also allow clicking the circle orb to start/stop
 document.getElementById('orb').addEventListener('click', () => {
   running ? stopSession() : startSession();
+});
+
+// Space / Enter to toggle start/stop
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.code === 'Space' || e.code === 'Enter') {
+    e.preventDefault();
+    running ? stopSession() : startSession();
+  }
 });
 
 // Timing sliders
