@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Breathe — Precision Breathing App</title>
+<title>deepflo — breathe with precision</title>
 <style>
   :root {
     --bg: #0d1117;
@@ -84,7 +84,7 @@
   }
   .presets {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
   }
   .preset-btn {
@@ -307,7 +307,13 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: transform .3s ease, box-shadow .4s;
+    transition: transform .3s ease, box-shadow .4s, border-color .3s;
+    cursor: pointer;
+    user-select: none;
+  }
+  .circle-orb:hover {
+    border-color: rgba(88,166,255,.5);
+    box-shadow: 0 0 30px rgba(88,166,255,.15);
   }
   .circle-orb.inhaling {
     transform: scale(1.15);
@@ -409,6 +415,39 @@
     line-height: 1.6;
   }
 
+  .solf-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 7px 6px;
+    cursor: pointer;
+    font-size: .72rem;
+    text-align: center;
+    transition: all .15s;
+    line-height: 1.3;
+  }
+  .solf-btn .solf-hz  { display: block; font-weight: 700; color: var(--accent2); font-size: .78rem; }
+  .solf-btn .solf-name { display: block; color: var(--muted); font-size: .64rem; }
+  .solf-btn:hover, .solf-btn.active { border-color: var(--accent); background: rgba(88,166,255,.1); }
+  .solf-btn.flash {
+    border-color: var(--accent);
+    background: rgba(88,166,255,.25);
+    transition: background 0s, border-color 0s;
+  }
+
+  .freq-preset {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: .72rem;
+    transition: all .15s;
+  }
+  .freq-preset:hover, .freq-preset.active { border-color: var(--accent); color: var(--accent2); background: rgba(88,166,255,.1); }
+
   /* Responsive */
   @media (max-width: 720px) {
     :root { --panel-w: 100%; }
@@ -430,7 +469,7 @@
 <body>
 
 <header>
-  <div class="logo">b<span>r</span>eathe</div>
+  <div class="logo">deep<span>flo</span></div>
   <div class="header-btns">
     <button class="icon-btn" id="themeBtn" title="Toggle theme">☀️ Light</button>
     <button class="icon-btn" id="fullBtn" title="Fullscreen">⛶ Full</button>
@@ -446,11 +485,11 @@
       <div class="presets" id="presetBtns">
         <button class="preset-btn active" data-preset="46">
           <span class="preset-name">4-6</span>
-          <span class="preset-desc">Default</span>
+          <span class="preset-desc">Balance</span>
         </button>
         <button class="preset-btn" data-preset="37">
           <span class="preset-name">3-7</span>
-          <span class="preset-desc">Relaxation</span>
+          <span class="preset-desc">Deep calm</span>
         </button>
         <button class="preset-btn" data-preset="478">
           <span class="preset-name">4-7-8</span>
@@ -471,6 +510,10 @@
         <button class="preset-btn" data-preset="deep">
           <span class="preset-name">Deep</span>
           <span class="preset-desc">6-2-8-0</span>
+        </button>
+        <button class="preset-btn" data-preset="resonance">
+          <span class="preset-name">Resonance</span>
+          <span class="preset-desc">5.5-0-5.5-0</span>
         </button>
         <button class="preset-btn" data-preset="custom">
           <span class="preset-name">Custom</span>
@@ -540,9 +583,61 @@
         <button class="instr-btn" data-instr="harp">
           <span class="emoji">🎶</span>Harp Glide
         </button>
+        <button class="instr-btn" data-instr="solfeggio">
+          <span class="emoji">🔮</span>Solfeggio
+        </button>
+        <button class="instr-btn" data-instr="piano">
+          <span class="emoji">🎹</span>Piano
+        </button>
+        <button class="instr-btn" data-instr="guitar">
+          <span class="emoji">🎸</span>Guitar
+        </button>
+        <button class="instr-btn" data-instr="drum">
+          <span class="emoji">🎛️</span>Pad Synth
+        </button>
+        <button class="instr-btn" data-instr="custom_freq">
+          <span class="emoji">🎛️</span>Custom Hz
+        </button>
+        <button class="instr-btn" data-instr="theremin">
+          <span class="emoji">🌀</span>Theremin
+        </button>
         <button class="instr-btn" data-instr="none">
           <span class="emoji">🔕</span>Silent
         </button>
+      </div>
+
+      <!-- Solfeggio picker — shown only when solfeggio selected -->
+      <div id="solfeggioPanel" style="display:none;margin-top:10px;">
+        <div class="section-title" style="margin-bottom:6px;">Solfeggio frequency</div>
+        <div style="display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px 10px;margin-bottom:8px;">
+          <span style="font-size:.75rem;color:var(--inhale);">↑ Inhale</span>
+          <select id="solfIn" style="font-size:.75rem;padding:4px 6px;"></select>
+          <span style="font-size:.75rem;color:var(--exhale);">↓ Exhale</span>
+          <select id="solfOut" style="font-size:.75rem;padding:4px 6px;"></select>
+        </div>
+        <div class="section-title" style="margin-bottom:6px;margin-top:4px;">Preview</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;" id="solfGrid"></div>
+      </div>
+
+      <!-- Custom frequency panel — shown only when custom_freq selected -->
+      <div id="customFreqPanel" style="display:none;margin-top:10px;">
+        <div class="section-title" style="margin-bottom:6px;">Custom frequency (Hz)</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="font-size:.72rem;color:var(--inhale);margin-bottom:4px;">↑ Inhale</div>
+            <div class="slider-row">
+              <input type="range" id="customFreqSlider" min="20" max="2000" step="1" value="432">
+              <span class="slider-val" id="customFreqVal">432 Hz</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;color:var(--exhale);margin-bottom:4px;">↓ Exhale</div>
+            <div class="slider-row">
+              <input type="range" id="customFreqSliderOut" min="20" max="2000" step="1" value="396">
+              <span class="slider-val" id="customFreqValOut">396 Hz</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -581,9 +676,14 @@
 
     <div class="controls">
       <div class="volume-row">
-        <span>🔈</span>
+        <span title="Cue volume" style="font-size:.9rem">🔔</span>
         <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.6">
-        <span>🔊</span>
+        <span style="font-size:.7rem;color:var(--muted)">CUE</span>
+      </div>
+      <div class="volume-row">
+        <span title="Sustain volume" style="font-size:.9rem">〰️</span>
+        <input type="range" id="sustainSlider" min="0" max="0.25" step="0.005" value="0.06">
+        <span style="font-size:.7rem;color:var(--muted)">PAD</span>
       </div>
       <button class="start-btn go" id="startBtn">▶ Start</button>
     </div>
@@ -637,10 +737,17 @@
 
 <script>
 // ═══════════════════════════════════════════════
-//  Audio Engine
+//  Audio Engine — sustained tones + transient cues
+//  Two separate gain buses:
+//    masterGain   → cue (transient) sounds
+//    sustainGain  → pad (sustained) sounds
+//  Both controllable independently from UI sliders.
 // ═══════════════════════════════════════════════
 let ctx = null;
 let masterGain = null;
+let sustainGain = null;  // separate bus for pad volume
+
+let sustainNodes = [];
 
 function getCtx() {
   if (!ctx) {
@@ -648,172 +755,535 @@ function getCtx() {
     masterGain = ctx.createGain();
     masterGain.gain.value = parseFloat(document.getElementById('volSlider').value);
     masterGain.connect(ctx.destination);
+
+    sustainGain = ctx.createGain();
+    sustainGain.gain.value = parseFloat(document.getElementById('sustainSlider').value);
+    sustainGain.connect(ctx.destination);
   }
   return ctx;
 }
 
 const NOTE_FREQS = {
-  high: { sine: 660, bell: 880, bowl: 528, flute: 784, chime: 1047, drone: 220, whisper: 440, harp: 880 },
-  mid:  { sine: 440, bell: 660, bowl: 396, flute: 587, chime: 784,  drone: 174, whisper: 330, harp: 659 },
-  low:  { sine: 264, bell: 440, bowl: 264, flute: 392, chime: 523,  drone: 130, whisper: 220, harp: 440 },
+  high: { sine:660, bell:880, bowl:528, flute:784, chime:1047, drone:246, whisper:440, harp:880,
+          solfeggio:0, piano:880, guitar:659, drum:0, custom_freq:0, theremin:660 },
+  mid:  { sine:440, bell:660, bowl:396, flute:587, chime:784,  drone:174, whisper:330, harp:659,
+          solfeggio:0, piano:523, guitar:440, drum:0, custom_freq:0, theremin:440 },
+  low:  { sine:264, bell:440, bowl:264, flute:392, chime:523,  drone:110, whisper:220, harp:440,
+          solfeggio:0, piano:261, guitar:330, drum:0, custom_freq:0, theremin:264 },
 };
 
-function playNote(instrument, noteKey, duration = 1.2) {
+// Solfeggio frequencies with names
+const SOLFEGGIO = [
+  { hz: 174,  name: 'Foundation',  desc: 'Pain relief' },
+  { hz: 285,  name: 'Quantum',     desc: 'Tissue healing' },
+  { hz: 396,  name: 'UT',          desc: 'Liberating guilt' },
+  { hz: 417,  name: 'RE',          desc: 'Undoing situations' },
+  { hz: 528,  name: 'MI',          desc: 'Transformation' },
+  { hz: 639,  name: 'FA',          desc: 'Connecting relations' },
+  { hz: 741,  name: 'SOL',         desc: 'Awakening intuition' },
+  { hz: 852,  name: 'LA',          desc: 'Spiritual order' },
+  { hz: 963,  name: 'Numinous',    desc: 'Divine consciousness' },
+];
+
+let currentSolfeggioHz = 528; // legacy / preview
+let currentSolfeggioInHz  = 528; // MI — inhale
+let currentSolfeggioOutHz = 396; // UT — exhale
+let customFreqHz    = 432;
+let customFreqHzOut = 396;
+
+// ── Stop any currently playing sustain (short fade) ──
+function stopSustain() {
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  sustainNodes.forEach(({ gainNode, oscillators, sources }) => {
+    try {
+      gainNode.gain.cancelScheduledValues(now);
+      gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+      gainNode.gain.linearRampToValueAtTime(0, now + 0.25);
+      oscillators && oscillators.forEach(o => { try { o.stop(now + 0.3); } catch(e){} });
+      sources    && sources.forEach(s    => { try { s.stop(now + 0.3);  } catch(e){} });
+    } catch(e) {}
+  });
+  sustainNodes = [];
+}
+
+// ── Sustained pad: routes through sustainGain bus ──
+function startSustain(instrument, noteKey, duration, phaseName) {
   if (instrument === 'none') return;
+  stopSustain();
   const ac = getCtx();
   const freq = NOTE_FREQS[noteKey][instrument] || 440;
   const now = ac.currentTime;
-  const vol = parseFloat(document.getElementById('volSlider').value);
+  // SUSTAIN_VOL is a relative multiplier within the pad bus (0–1)
+  // The sustainGain bus master controls actual output level
+  const SUSTAIN_VOL = 0.9; // relative within pad bus — actual level controlled by sustainGain (max 0.25)
+  const attackT  = Math.min(0.4, duration * 0.15);
+  const releaseT = Math.min(0.5, duration * 0.15);
+  const holdEnd  = now + duration - releaseT;
 
   const g = ac.createGain();
+  g.connect(sustainGain);   // ← routes to pad bus, not master
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(SUSTAIN_VOL, now + attackT);
+  g.gain.setValueAtTime(SUSTAIN_VOL, Math.max(holdEnd, now + attackT + 0.01));
+  g.gain.linearRampToValueAtTime(0, now + duration + 0.1);
+
+  const oscs = [];
+  const srcs = [];
+
+  switch(instrument) {
+    case 'sine':
+    case 'bell':
+    case 'bowl':
+    case 'harp': {
+      const o = ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = freq * 0.5;
+      o.connect(g);
+      o.start(now); o.stop(now + duration + 0.3);
+      oscs.push(o);
+      break;
+    }
+    case 'flute': {
+      const o  = ac.createOscillator();
+      const o2 = ac.createOscillator();
+      o.type  = 'sine'; o.frequency.value  = freq;
+      o2.type = 'sine'; o2.frequency.value = freq * 1.003;
+      o.connect(g); o2.connect(g);
+      o.start(now);  o.stop(now + duration + 0.3);
+      o2.start(now); o2.stop(now + duration + 0.3);
+      oscs.push(o, o2);
+      break;
+    }
+    case 'chime': {
+      const o = ac.createOscillator();
+      o.type = 'sine'; o.frequency.value = freq * 0.75;
+      o.connect(g);
+      o.start(now); o.stop(now + duration + 0.3);
+      oscs.push(o);
+      break;
+    }
+    case 'drone': {
+      const o1 = ac.createOscillator();
+      const o2 = ac.createOscillator();
+      o1.type = 'sawtooth'; o1.frequency.value = freq;
+      o2.type = 'sine';     o2.frequency.value = freq * 1.007;
+      const filter = ac.createBiquadFilter();
+      filter.type = 'lowpass'; filter.frequency.value = 500;
+      o1.connect(filter); o2.connect(filter); filter.connect(g);
+      // Drone overrides envelope for richer presence
+      g.gain.cancelScheduledValues(now);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(SUSTAIN_VOL * 1.35, now + attackT);
+      g.gain.setValueAtTime(SUSTAIN_VOL * 1.35, Math.max(holdEnd, now + attackT + 0.01));
+      g.gain.linearRampToValueAtTime(0, now + duration + 0.1);
+      o1.start(now); o1.stop(now + duration + 0.3);
+      o2.start(now); o2.stop(now + duration + 0.3);
+      oscs.push(o1, o2);
+      break;
+    }
+    case 'whisper': {
+      // Layered breath noise — three filtered noise streams shaped like real breathing
+      const isExhale = phaseName === 'exhale';
+      const totalDur = duration + 0.4;
+
+      // Helper: make a shaped noise layer
+      function makeBreathLayer(lpFreq, hpFreq, peakVol, peakAt, decayTo, decayAt) {
+        const bLen = Math.ceil(ac.sampleRate * totalDur);
+        const b    = ac.createBuffer(1, bLen, ac.sampleRate);
+        const d    = b.getChannelData(0);
+        for (let i = 0; i < bLen; i++) d[i] = Math.random() * 2 - 1;
+        const src = ac.createBufferSource(); src.buffer = b;
+        const hp  = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = hpFreq;
+        const lp  = ac.createBiquadFilter(); lp.type = 'lowpass';  lp.frequency.value = lpFreq; lp.Q.value = 0.5;
+        const gL  = ac.createGain();
+        src.connect(hp); hp.connect(lp); lp.connect(gL); gL.connect(sustainGain);
+        gL.gain.setValueAtTime(0, now);
+        gL.gain.linearRampToValueAtTime(peakVol, now + peakAt);
+        gL.gain.linearRampToValueAtTime(decayTo, now + decayAt);
+        gL.gain.linearRampToValueAtTime(0, now + totalDur - 0.05);
+        src.start(now); src.stop(now + totalDur);
+        srcs.push(src);
+      }
+
+      if (!isExhale) {
+        // Inhale: starts quiet, grows, slight taper at end — airway opens
+        // Low body (turbulence in chest)
+        makeBreathLayer(600,  80,  SUSTAIN_VOL * 0.55, duration * 0.55, SUSTAIN_VOL * 0.35, duration * 0.9);
+        // Mid nasal hiss
+        makeBreathLayer(3500, 800, SUSTAIN_VOL * 0.40, duration * 0.50, SUSTAIN_VOL * 0.22, duration * 0.85);
+        // High airy sparkle
+        makeBreathLayer(8000, 3000, SUSTAIN_VOL * 0.18, duration * 0.45, SUSTAIN_VOL * 0.08, duration * 0.8);
+      } else {
+        // Exhale: peaks early then long smooth sigh — air rushes out then settles
+        // Low body warmth
+        makeBreathLayer(700,  60,  SUSTAIN_VOL * 0.60, duration * 0.12, SUSTAIN_VOL * 0.05, duration * 0.88);
+        // Mid mouth hiss (slightly higher than inhale)
+        makeBreathLayer(2800, 600, SUSTAIN_VOL * 0.42, duration * 0.10, SUSTAIN_VOL * 0.03, duration * 0.85);
+        // High airy top
+        makeBreathLayer(7000, 2500, SUSTAIN_VOL * 0.16, duration * 0.08, SUSTAIN_VOL * 0.01, duration * 0.75);
+      }
+      break;
+    }
+    case 'solfeggio':
+    case 'custom_freq': {
+      const f = instrument === 'solfeggio'
+        ? (phaseName === 'inhale' ? currentSolfeggioInHz : phaseName === 'exhale' ? currentSolfeggioOutHz : currentSolfeggioInHz)
+        : (phaseName === 'inhale' ? customFreqHz : phaseName === 'exhale' ? customFreqHzOut : customFreqHz);
+      const o = ac.createOscillator();
+      o.type = 'sine'; o.frequency.value = f;
+      o.connect(g);
+      o.start(now); o.stop(now + duration + 0.3);
+      oscs.push(o);
+      break;
+    }
+    case 'piano':
+    case 'guitar': {
+      // Sustained harmonic pad approximating the instrument timbre
+      const baseFreq = instrument === 'piano'
+        ? [196, 261, 349][['low','mid','high'].indexOf(noteKey)] || 261
+        : [110, 147, 196][['low','mid','high'].indexOf(noteKey)] || 147;
+      const harmonics = instrument === 'piano'
+        ? [1, 2, 3, 4, 5]
+        : [1, 2, 3, 5, 7]; // guitar has odd harmonics
+      const vols = instrument === 'piano'
+        ? [0.5, 0.25, 0.12, 0.06, 0.03]
+        : [0.5, 0.2,  0.15, 0.08, 0.04];
+      harmonics.forEach((h, i) => {
+        const o = ac.createOscillator();
+        const gH = ac.createGain();
+        o.type = 'sine'; o.frequency.value = baseFreq * h;
+        o.connect(gH); gH.connect(sustainGain);
+        gH.gain.setValueAtTime(0, now);
+        gH.gain.linearRampToValueAtTime(vols[i] * SUSTAIN_VOL * 0.5, now + attackT);
+        gH.gain.setValueAtTime(vols[i] * SUSTAIN_VOL * 0.5, Math.max(holdEnd, now + attackT + 0.01));
+        gH.gain.linearRampToValueAtTime(0, now + duration + 0.1);
+        o.start(now); o.stop(now + duration + 0.3);
+        oscs.push(o);
+      });
+      break;
+    }
+    case 'drum': {
+      // Soft electronic pad — two detuned sines + gentle LP filter
+      const padFreqs = { low: 130, mid: 196, high: 261 };
+      const base = padFreqs[noteKey] || 196;
+      [1, 1.004, 1.5, 2].forEach((ratio, i) => {
+        const o = ac.createOscillator();
+        const gH = ac.createGain();
+        const filt = ac.createBiquadFilter();
+        filt.type = 'lowpass'; filt.frequency.value = 800; filt.Q.value = 0.5;
+        o.type = 'sine'; o.frequency.value = base * ratio;
+        o.connect(filt); filt.connect(gH); gH.connect(sustainGain);
+        const hv = [0.5, 0.45, 0.2, 0.1][i] * SUSTAIN_VOL * 0.8;
+        gH.gain.setValueAtTime(0, now);
+        gH.gain.linearRampToValueAtTime(hv, now + attackT);
+        gH.gain.setValueAtTime(hv, Math.max(holdEnd, now + attackT + 0.01));
+        gH.gain.linearRampToValueAtTime(0, now + duration + 0.1);
+        o.start(now); o.stop(now + duration + 0.3);
+        oscs.push(o);
+      });
+      break;
+    }
+    case 'theremin': {
+      // Continuous wavering tone with slow LFO vibrato + gentle tremolo
+      const o = ac.createOscillator();
+      const lfo = ac.createOscillator();
+      const lfoGain = ac.createGain();
+      const tremLfo = ac.createOscillator();
+      const tremGain = ac.createGain();
+      o.type = 'sine'; o.frequency.value = freq * 0.5;
+      lfo.type = 'sine'; lfo.frequency.value = 5;
+      lfoGain.gain.value = 6;
+      lfo.connect(lfoGain); lfoGain.connect(o.frequency);
+      tremLfo.type = 'sine'; tremLfo.frequency.value = 3.5;
+      tremGain.gain.value = SUSTAIN_VOL * 0.12;
+      tremLfo.connect(tremGain); tremGain.connect(g.gain);
+      o.connect(g);
+      lfo.start(now); lfo.stop(now + duration + 0.3);
+      tremLfo.start(now); tremLfo.stop(now + duration + 0.3);
+      o.start(now); o.stop(now + duration + 0.3);
+      oscs.push(o, lfo, tremLfo);
+      break;
+    }
+  }
+
+  sustainNodes.push({ gainNode: g, oscillators: oscs, sources: srcs });
+}
+
+// ── Transient cue: routes through masterGain bus ──
+function playTransientCue(instrument, noteKey, phaseName) {
+  if (instrument === 'none') return;
+  const ac  = getCtx();
+  const freq = NOTE_FREQS[noteKey][instrument] || 440;
+  const now  = ac.currentTime;
+  const vol  = parseFloat(document.getElementById('volSlider').value);
+  const g    = ac.createGain();
   g.connect(masterGain);
 
   switch(instrument) {
     case 'sine': {
       const o = ac.createOscillator();
-      o.type = 'sine';
-      o.frequency.value = freq;
+      o.type = 'sine'; o.frequency.value = freq;
       o.connect(g);
       g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(vol * 0.35, now + 0.06);
-      g.gain.exponentialRampToValueAtTime(0.001, now + Math.max(duration, 0.5));
-      o.start(now); o.stop(now + duration + 0.1);
+      g.gain.linearRampToValueAtTime(vol * 0.45, now + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+      o.start(now); o.stop(now + 1.0);
       break;
     }
     case 'bell': {
-      const o = ac.createOscillator();
+      const o  = ac.createOscillator();
       const o2 = ac.createOscillator();
-      o.type = 'sine'; o.frequency.value = freq;
+      o.type  = 'sine'; o.frequency.value  = freq;
       o2.type = 'sine'; o2.frequency.value = freq * 2.756;
       const g2 = ac.createGain();
       o.connect(g); o2.connect(g2); g2.connect(masterGain);
-      g.gain.setValueAtTime(vol * 0.4, now);
-      g.gain.exponentialRampToValueAtTime(0.001, now + Math.max(duration * 1.5, 1.5));
-      g2.gain.setValueAtTime(vol * 0.15, now);
-      g2.gain.exponentialRampToValueAtTime(0.001, now + Math.max(duration, 1));
-      o.start(now); o.stop(now + duration * 2);
-      o2.start(now); o2.stop(now + duration * 2);
+      g.gain.setValueAtTime(vol * 0.5, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+      g2.gain.setValueAtTime(vol * 0.2, now);
+      g2.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+      o.start(now); o.stop(now + 3);
+      o2.start(now); o2.stop(now + 2);
       break;
     }
     case 'bowl': {
-      // Singing bowl: slow attack, rich harmonics
-      const harmonics = [1, 2.04, 3.11, 4.22];
-      harmonics.forEach((h, i) => {
-        const o = ac.createOscillator();
+      [1, 2.04, 3.11, 4.22].forEach((h, i) => {
+        const o  = ac.createOscillator();
         const gH = ac.createGain();
-        o.type = 'sine';
-        o.frequency.value = freq * h;
+        o.type = 'sine'; o.frequency.value = freq * h;
         o.connect(gH); gH.connect(masterGain);
-        const hVol = vol * [0.4, 0.15, 0.08, 0.04][i];
+        const hVol = vol * [0.45, 0.18, 0.09, 0.04][i];
         gH.gain.setValueAtTime(0, now);
-        gH.gain.linearRampToValueAtTime(hVol, now + 0.4);
-        gH.gain.exponentialRampToValueAtTime(0.001, now + Math.max(duration * 2, 2));
-        o.start(now); o.stop(now + duration * 2 + 0.2);
+        gH.gain.linearRampToValueAtTime(hVol, now + 0.3);
+        gH.gain.exponentialRampToValueAtTime(0.001, now + 3.5);
+        o.start(now); o.stop(now + 4);
       });
       break;
     }
     case 'flute': {
       const o = ac.createOscillator();
-      const noise = ac.createOscillator();
       o.type = 'sine'; o.frequency.value = freq;
-      noise.type = 'triangle'; noise.frequency.value = freq * 1.01;
-      const gN = ac.createGain();
-      noise.connect(gN); gN.connect(g); o.connect(g);
-      gN.gain.value = vol * 0.06;
+      o.connect(g);
       g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(vol * 0.3, now + 0.15);
-      g.gain.setValueAtTime(vol * 0.3, now + Math.max(duration - 0.2, 0.2));
-      g.gain.linearRampToValueAtTime(0, now + duration + 0.1);
-      o.start(now); o.stop(now + duration + 0.2);
-      noise.start(now); noise.stop(now + duration + 0.2);
+      g.gain.linearRampToValueAtTime(vol * 0.4, now + 0.12);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+      o.start(now); o.stop(now + 1.3);
       break;
     }
     case 'chime': {
-      const freqs = [freq, freq * 1.335, freq * 1.587, freq * 2];
-      freqs.forEach((f, i) => {
-        const o = ac.createOscillator();
+      [freq, freq * 1.335, freq * 1.587, freq * 2].forEach((f, i) => {
+        const o  = ac.createOscillator();
         const gC = ac.createGain();
         o.type = 'sine'; o.frequency.value = f;
         o.connect(gC); gC.connect(masterGain);
-        const delay = i * 0.12;
+        const delay = i * 0.1;
         gC.gain.setValueAtTime(0, now + delay);
-        gC.gain.linearRampToValueAtTime(vol * 0.2, now + delay + 0.02);
-        gC.gain.exponentialRampToValueAtTime(0.001, now + delay + 1.5);
-        o.start(now + delay); o.stop(now + delay + 2);
+        gC.gain.linearRampToValueAtTime(vol * 0.28, now + delay + 0.015);
+        gC.gain.exponentialRampToValueAtTime(0.001, now + delay + 2.0);
+        o.start(now + delay); o.stop(now + delay + 2.2);
       });
       break;
     }
     case 'drone': {
       const o = ac.createOscillator();
-      const o2 = ac.createOscillator();
-      o.type = 'sawtooth'; o.frequency.value = freq;
-      o2.type = 'sine'; o2.frequency.value = freq * 1.005; // slight detune
-      const filter = ac.createBiquadFilter();
-      filter.type = 'lowpass'; filter.frequency.value = 600;
-      o.connect(filter); o2.connect(filter); filter.connect(g);
+      o.type = 'sine'; o.frequency.value = freq * 2;
+      o.connect(g);
       g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(vol * 0.18, now + 0.5);
-      g.gain.setValueAtTime(vol * 0.18, now + Math.max(duration - 0.4, 0.5));
-      g.gain.linearRampToValueAtTime(0, now + duration + 0.2);
-      o.start(now); o.stop(now + duration + 0.3);
-      o2.start(now); o2.stop(now + duration + 0.3);
+      g.gain.linearRampToValueAtTime(vol * 0.2, now + 0.08);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+      o.start(now); o.stop(now + 1.0);
       break;
     }
     case 'whisper': {
-      // White noise shaped like a breath
-      const bufLen = ac.sampleRate * (duration + 0.5);
-      const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
-      const src = ac.createBufferSource(); src.buffer = buf;
-      const filter = ac.createBiquadFilter();
-      filter.type = 'bandpass'; filter.frequency.value = freq; filter.Q.value = 0.8;
-      src.connect(filter); filter.connect(g);
-      g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(vol * 0.25, now + 0.3);
-      g.gain.setValueAtTime(vol * 0.25, now + Math.max(duration - 0.3, 0.3));
-      g.gain.linearRampToValueAtTime(0, now + duration + 0.1);
-      src.start(now); src.stop(now + duration + 0.3);
-      break;
-    }
-    case 'harp': {
-      // Gliding arpeggio
-      const notes = [freq, freq * 1.25, freq * 1.5, freq * 2];
-      notes.forEach((f, i) => {
-        const o = ac.createOscillator();
-        const gH = ac.createGain();
-        o.type = 'sine'; o.frequency.value = f;
-        o.connect(gH); gH.connect(masterGain);
-        const d = i * (duration / 4.5);
-        gH.gain.setValueAtTime(0, now + d);
-        gH.gain.linearRampToValueAtTime(vol * 0.22, now + d + 0.03);
-        gH.gain.exponentialRampToValueAtTime(0.001, now + d + 1.2);
-        o.start(now + d); o.stop(now + d + 1.5);
+      // Layered breath noise cue — short but realistic
+      const isExhale = phaseName === 'exhale';
+      const breathDur = 1.6;
+
+      [[isExhale ? 700 : 600,  isExhale ? 60  : 80,  0.50, 0.12, 0.06, 0.80],
+       [isExhale ? 2800: 3500, isExhale ? 600 : 800, 0.36, 0.10, 0.03, 0.75],
+       [isExhale ? 7000: 8000, isExhale ? 2500:3000, 0.14, 0.08, 0.01, 0.65]
+      ].forEach(([lpF, hpF, pk, pkAt, dcTo, dcAt]) => {
+        const bLen = Math.ceil(ac.sampleRate * breathDur);
+        const b    = ac.createBuffer(1, bLen, ac.sampleRate);
+        const d    = b.getChannelData(0);
+        for (let i = 0; i < bLen; i++) d[i] = Math.random() * 2 - 1;
+        const src = ac.createBufferSource(); src.buffer = b;
+        const hp  = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = hpF;
+        const lp  = ac.createBiquadFilter(); lp.type = 'lowpass';  lp.frequency.value = lpF; lp.Q.value = 0.5;
+        const gL  = ac.createGain();
+        src.connect(hp); hp.connect(lp); lp.connect(gL); gL.connect(masterGain);
+        gL.gain.setValueAtTime(0, now);
+        gL.gain.linearRampToValueAtTime(vol * pk, now + pkAt * breathDur);
+        gL.gain.linearRampToValueAtTime(vol * dcTo, now + dcAt * breathDur);
+        gL.gain.linearRampToValueAtTime(0, now + breathDur);
+        src.start(now); src.stop(now + breathDur + 0.05);
       });
       break;
     }
-  }
+    case 'harp': {
+      [freq, freq * 1.25, freq * 1.5, freq * 2].forEach((f, i) => {
+        const o  = ac.createOscillator();
+        const gH = ac.createGain();
+        o.type = 'sine'; o.frequency.value = f;
+        o.connect(gH); gH.connect(masterGain);
+        const d = i * 0.08;
+        gH.gain.setValueAtTime(0, now + d);
+        gH.gain.linearRampToValueAtTime(vol * 0.3, now + d + 0.02);
+        gH.gain.exponentialRampToValueAtTime(0.001, now + d + 1.8);
+        o.start(now + d); o.stop(now + d + 2.0);
+      });
+      break;
+    }
+    case 'solfeggio': {
+      // Use inhale or exhale frequency
+      const f = phaseName === 'exhale' ? currentSolfeggioOutHz : currentSolfeggioInHz;
+      const o = ac.createOscillator();
+      o.type = 'sine'; o.frequency.value = f;
+      o.connect(g);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol * 0.42, now + 0.08);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 2.8);
+      o.start(now); o.stop(now + 3.0);
+      break;
+    }
+    case 'piano': {
+      // Soft Rhodes-like: slower attack, warmer tone, longer bloom
+      const baseFreq = [196, 261, 349][['low','mid','high'].indexOf(noteKey)] || 261;
+      // Main tone with slight detuning for warmth
+      [[1, 0.45], [2, 0.18], [3, 0.07], [4, 0.025]].forEach(([h, hv], i) => {
+        const o  = ac.createOscillator();
+        const gH = ac.createGain();
+        const filt = ac.createBiquadFilter();
+        filt.type = 'lowpass'; filt.frequency.value = 1200; filt.Q.value = 0.4;
+        o.type = i === 0 ? 'sine' : 'sine';
+        o.frequency.value = baseFreq * h + (i === 1 ? 0.3 : 0); // tiny detune on 2nd
+        o.connect(filt); filt.connect(gH); gH.connect(masterGain);
+        gH.gain.setValueAtTime(0, now);
+        gH.gain.linearRampToValueAtTime(vol * hv, now + 0.06);
+        gH.gain.exponentialRampToValueAtTime(0.001, now + [5.0, 3.5, 2.2, 1.2][i]);
+        o.start(now); o.stop(now + 5.5);
+      });
+      break;
+    }
+    case 'guitar': {
+      // Acoustic nylon-string — low register, warm, long natural decay
+      const baseFreq = [110, 147, 196][['low','mid','high'].indexOf(noteKey)] || 147; // E2, D3, G3
+      // Very soft fingertip noise — barely audible texture
+      const bufLen = Math.ceil(ac.sampleRate * 0.008);
+      const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+      const noise = ac.createBufferSource(); noise.buffer = buf;
+      const noiseF = ac.createBiquadFilter();
+      noiseF.type = 'bandpass'; noiseF.frequency.value = baseFreq * 3; noiseF.Q.value = 3;
+      const noiseG = ac.createGain();
+      noiseG.gain.setValueAtTime(vol * 0.04, now);
+      noiseG.gain.exponentialRampToValueAtTime(0.001, now + 0.01);
+      noise.connect(noiseF); noiseF.connect(noiseG); noiseG.connect(masterGain);
+      noise.start(now); noise.stop(now + 0.012);
+      // Body resonance — hollow acoustic body warmth
+      const bodyBuf = ac.createBuffer(1, Math.ceil(ac.sampleRate * 0.04), ac.sampleRate);
+      const bodyData = bodyBuf.getChannelData(0);
+      for (let i = 0; i < bodyData.length; i++) bodyData[i] = Math.random() * 2 - 1;
+      const bodySrc = ac.createBufferSource(); bodySrc.buffer = bodyBuf;
+      const bodyF = ac.createBiquadFilter(); bodyF.type = 'bandpass'; bodyF.frequency.value = baseFreq; bodyF.Q.value = 8;
+      const bodyG = ac.createGain();
+      bodyG.gain.setValueAtTime(vol * 0.12, now);
+      bodyG.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      bodySrc.connect(bodyF); bodyF.connect(bodyG); bodyG.connect(masterGain);
+      bodySrc.start(now); bodySrc.stop(now + 0.4);
+      // Harmonic partials — nylon string character: strong fundamental, gentle harmonics
+      [[1, 0.48, 6.5], [2, 0.20, 4.2], [3, 0.11, 2.8], [4, 0.055, 1.8], [5, 0.025, 1.1], [6, 0.01, 0.7]]
+        .forEach(([h, hv, decay]) => {
+          const o  = ac.createOscillator();
+          const gH = ac.createGain();
+          const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = baseFreq * h * 2.2;
+          o.type = 'sine'; o.frequency.value = baseFreq * h;
+          o.connect(lp); lp.connect(gH); gH.connect(masterGain);
+          gH.gain.setValueAtTime(0, now);
+          gH.gain.linearRampToValueAtTime(vol * hv, now + 0.012); // slightly slower than steel string
+          gH.gain.exponentialRampToValueAtTime(0.001, now + decay);
+          o.start(now); o.stop(now + decay + 0.1);
+        });
+      break;
+    }
+    case 'drum': {
+      // Soft electronic pad cue — inhale gets a rising chord, exhale gets a lower resolved tone
+      const isExhale = phaseName === 'exhale';
+      // Inhale: mid+high (open, expansive); Exhale: low+mid (grounding, resolved)
+      const pairs = isExhale
+        ? [[130, 0.40], [196, 0.25], [261, 0.12]]
+        : [[196, 0.30], [261, 0.38], [392, 0.20]];
+      pairs.forEach(([f, hv]) => {
+        const o = ac.createOscillator();
+        const gH = ac.createGain();
+        const filt = ac.createBiquadFilter();
+        filt.type = 'lowpass'; filt.frequency.value = 900; filt.Q.value = 0.4;
+        o.type = 'sine'; o.frequency.value = f;
+        o.connect(filt); filt.connect(gH); gH.connect(masterGain);
+        gH.gain.setValueAtTime(0, now);
+        gH.gain.linearRampToValueAtTime(vol * hv, now + 0.15);
+        gH.gain.exponentialRampToValueAtTime(0.001, now + 3.5);
+        o.start(now); o.stop(now + 4.0);
+      });
+      break;
+    }
+    case 'custom_freq': {
+      const f = phaseName === 'exhale' ? customFreqHzOut : customFreqHz;
+      const o = ac.createOscillator();
+      o.type = 'sine'; o.frequency.value = f;
+      o.connect(g);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol * 0.4, now + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+      o.start(now); o.stop(now + 1.6);
+      break;
+    }
+    case 'theremin': {
+      // Wavering sine with LFO vibrato — eerie gliding quality
+      const o = ac.createOscillator();
+      const lfo = ac.createOscillator();
+      const lfoGain = ac.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      lfo.type = 'sine'; lfo.frequency.value = 5.5; // 5.5 Hz vibrato
+      lfoGain.gain.value = 8; // ±8 Hz pitch wobble
+      lfo.connect(lfoGain); lfoGain.connect(o.frequency);
+      o.connect(g);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol * 0.38, now + 0.18);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+      lfo.start(now); lfo.stop(now + 2.3);
+      o.start(now); o.stop(now + 2.3);
+      break;
+    }
+  } // end switch
+} // end playTransientCue
+
+function playNote(instrument, noteKey, phaseName) {
+  playTransientCue(instrument, noteKey, phaseName || 'inhale');
 }
 
 // ═══════════════════════════════════════════════
 //  State
 // ═══════════════════════════════════════════════
 const PRESETS = {
-  '46': { inS: 4,   h1: 0,  outS: 6,  h2: 0  },
-  '37': { inS: 3,   h1: 0,  outS: 7,  h2: 0  },
-  '478': { inS: 4,   h1: 7,  outS: 8,  h2: 0  },
+  '46':   { inS: 4,   h1: 0,  outS: 6,  h2: 0  },
+  '37':   { inS: 3,   h1: 0,  outS: 7,  h2: 0  },
+  '478':  { inS: 4,   h1: 7,  outS: 8,  h2: 0  },
   'box':  { inS: 4,   h1: 4,  outS: 4,  h2: 4  },
   'calm': { inS: 5,   h1: 0,  outS: 5,  h2: 0  },
   'wim':  { inS: 2,   h1: 0,  outS: 2,  h2: 0  },
-  'deep': { inS: 6,   h1: 2,  outS: 8,  h2: 0  },
+  'deep':      { inS: 6,   h1: 2,  outS: 8,   h2: 0  },
+  'resonance': { inS: 5.5, h1: 0,  outS: 5.5, h2: 0  },
 };
 
-let running = false;
-let rafId = null;
-let phaseStart = 0;
-let phaseIndex = 0;
-let cycleCount = 0;
-let phases = [];
+let running      = false;
+let timerId      = null;   // setTimeout handle (background-safe)
+let rafId        = null;   // rAF handle (UI updates only)
+let phaseStart   = 0;      // AudioContext time when phase began
+let phaseIndex   = 0;
+let cycleCount   = 0;
+let phases       = [];
 let currentInstr = 'sine';
 
 const PHASE_COLORS = {
@@ -822,7 +1292,7 @@ const PHASE_COLORS = {
   exhale: '#f78166',
   hold2:  '#d2a8ff',
 };
-const CIRCUMFERENCE = 2 * Math.PI * 130; // ≈ 816.81
+const CIRCUMFERENCE = 2 * Math.PI * 130;
 
 function getTimings() {
   return {
@@ -836,26 +1306,25 @@ function getTimings() {
 function buildPhases() {
   const t = getTimings();
   const arr = [];
-  if (t.inS  > 0) arr.push({ name: 'inhale', label: 'Inhale',    dur: t.inS,  orbClass: 'inhaling', color: PHASE_COLORS.inhale });
-  if (t.h1   > 0) arr.push({ name: 'hold1',  label: 'Hold',      dur: t.h1,   orbClass: 'holding',  color: PHASE_COLORS.hold1  });
-  if (t.outS > 0) arr.push({ name: 'exhale', label: 'Exhale',    dur: t.outS, orbClass: 'exhaling', color: PHASE_COLORS.exhale });
-  if (t.h2   > 0) arr.push({ name: 'hold2',  label: 'Hold Out',  dur: t.h2,   orbClass: 'holding',  color: PHASE_COLORS.hold2  });
+  if (t.inS  > 0) arr.push({ name:'inhale', label:'Inhale',   dur:t.inS,  orbClass:'inhaling', color:PHASE_COLORS.inhale });
+  if (t.h1   > 0) arr.push({ name:'hold1',  label:'Hold',     dur:t.h1,   orbClass:'holding',  color:PHASE_COLORS.hold1  });
+  if (t.outS > 0) arr.push({ name:'exhale', label:'Exhale',   dur:t.outS, orbClass:'exhaling', color:PHASE_COLORS.exhale });
+  if (t.h2   > 0) arr.push({ name:'hold2',  label:'Hold Out', dur:t.h2,   orbClass:'holding',  color:PHASE_COLORS.hold2  });
   return arr;
 }
 
 function renderTimeline() {
   phases = buildPhases();
   const total = phases.reduce((s, p) => s + p.dur, 0);
-  const bar = document.getElementById('tlBar');
-  const lbl = document.getElementById('tlLabels');
-  bar.innerHTML = '';
-  lbl.innerHTML = '';
+  const bar   = document.getElementById('tlBar');
+  const lbl   = document.getElementById('tlLabels');
+  bar.innerHTML = ''; lbl.innerHTML = '';
   phases.forEach(p => {
     const seg = document.createElement('div');
     seg.className = 'tl-segment';
-    seg.style.width = (p.dur / total * 100) + '%';
+    seg.style.width      = (p.dur / total * 100) + '%';
     seg.style.background = p.color;
-    seg.style.opacity = '.5';
+    seg.style.opacity    = '.5';
     bar.appendChild(seg);
     const l = document.createElement('span');
     l.className = 'tl-lbl';
@@ -865,84 +1334,107 @@ function renderTimeline() {
 }
 
 // ═══════════════════════════════════════════════
-//  Breathing loop
+//  Breathing loop — background-safe architecture
+//
+//  The timer that advances phases uses setTimeout
+//  anchored to AudioContext.currentTime, NOT
+//  requestAnimationFrame. This means:
+//    • Phases advance correctly even when the tab
+//      is hidden / backgrounded / phone locked
+//    • rAF is used ONLY for visual updates (circle,
+//      countdown) and pauses harmlessly when hidden
+//    • Audio (Web Audio API) keeps playing regardless
 // ═══════════════════════════════════════════════
+
 function startPhase(idx) {
-  phaseIndex = idx % phases.length;
-  phaseStart = performance.now();
-  const p = phases[phaseIndex];
-
-  // Cue sound
-  const instr = currentInstr;
-  let cueNote;
-  if (p.name === 'inhale') cueNote = document.getElementById('cueIn').value;
-  else if (p.name === 'exhale') cueNote = document.getElementById('cueOut').value;
-  else cueNote = document.getElementById('cueHold').value;
-  playNote(instr, cueNote, p.dur);
-
-  // Update UI
-  const orb = document.getElementById('orb');
-  orb.className = 'circle-orb ' + p.orbClass;
-  document.getElementById('phaseLabel').textContent = p.label;
-  document.getElementById('phaseLabel').style.color = p.color;
-  document.getElementById('circleSub').textContent = p.label;
-  document.getElementById('circleProgress').style.stroke = p.color;
-}
-
-function loop(ts) {
   if (!running) return;
+  phaseIndex = idx % phases.length;
+
+  // Record phase start in AudioContext time (never pauses)
+  phaseStart = ctx ? ctx.currentTime : 0;
+
   const p = phases[phaseIndex];
-  const elapsed = (ts - phaseStart) / 1000;
-  const frac = Math.min(elapsed / p.dur, 1);
-  const remaining = Math.max(p.dur - elapsed, 0);
 
-  document.getElementById('circleTime').textContent = remaining.toFixed(1);
-  const offset = CIRCUMFERENCE * (1 - frac);
-  document.getElementById('circleProgress').style.strokeDashoffset = offset;
+  // Fire sounds
+  const instr = currentInstr;
+  let cueNote = p.name === 'inhale' ? document.getElementById('cueIn').value
+              : p.name === 'exhale' ? document.getElementById('cueOut').value
+              : document.getElementById('cueHold').value;
+  playTransientCue(instr, cueNote, p.name);
+  startSustain(instr, cueNote, p.dur, p.name);
 
-  if (elapsed >= p.dur) {
+  // Update visuals
+  document.getElementById('orb').className = 'circle-orb ' + p.orbClass;
+  document.getElementById('phaseLabel').textContent    = p.label;
+  document.getElementById('phaseLabel').style.color    = p.color;
+  document.getElementById('circleSub').textContent     = p.label;
+  document.getElementById('circleProgress').style.stroke = p.color;
+
+  // Schedule next phase transition via setTimeout (works in background)
+  // Add a tiny buffer (50ms) to prevent drift accumulation
+  if (timerId) clearTimeout(timerId);
+  timerId = setTimeout(() => {
+    if (!running) return;
     const nextIdx = phaseIndex + 1;
     if (nextIdx >= phases.length) {
-      // completed one cycle
       cycleCount++;
       document.getElementById('cycleCount').textContent = cycleCount;
       const dots = document.querySelectorAll('.cycle-dot');
       dots[(cycleCount - 1) % 8].classList.add('done');
     }
     startPhase(nextIdx);
-  }
+  }, p.dur * 1000);
+}
 
-  rafId = requestAnimationFrame(loop);
+// rAF loop — visual only, pauses harmlessly when tab hidden
+function visualLoop() {
+  if (!running) return;
+  const p = phases[phaseIndex];
+  if (ctx && p) {
+    const elapsed   = ctx.currentTime - phaseStart;
+    const frac      = Math.min(elapsed / p.dur, 1);
+    const remaining = Math.max(p.dur - elapsed, 0);
+    document.getElementById('circleTime').textContent        = remaining.toFixed(1);
+    document.getElementById('circleProgress').style.strokeDashoffset = CIRCUMFERENCE * (1 - frac);
+  }
+  rafId = requestAnimationFrame(visualLoop);
 }
 
 function startSession() {
   if (running) return;
-  getCtx(); // unlock AudioContext on user gesture
-  if (ctx && ctx.state === 'suspended') ctx.resume();
+  getCtx();
+  if (ctx.state === 'suspended') ctx.resume();
   phases = buildPhases();
-  if (phases.length === 0) return;
-  running = true;
+  if (!phases.length) return;
+  running    = true;
   cycleCount = 0;
   document.querySelectorAll('.cycle-dot').forEach(d => d.classList.remove('done'));
   document.getElementById('cycleCount').textContent = '0';
-  document.getElementById('startBtn').textContent = '■ Stop';
-  document.getElementById('startBtn').className = 'start-btn stop';
+  document.getElementById('startBtn').textContent   = '■ Stop';
+  document.getElementById('startBtn').className     = 'start-btn stop';
   startPhase(0);
-  rafId = requestAnimationFrame(loop);
+  rafId = requestAnimationFrame(visualLoop);
 }
 
 function stopSession() {
   running = false;
-  if (rafId) cancelAnimationFrame(rafId);
-  document.getElementById('startBtn').textContent = '▶ Start';
-  document.getElementById('startBtn').className = 'start-btn go';
-  document.getElementById('orb').className = 'circle-orb';
-  document.getElementById('phaseLabel').textContent = 'Paused';
-  document.getElementById('phaseLabel').style.color = '';
-  document.getElementById('circleTime').textContent = '—';
-  document.getElementById('circleSub').textContent = 'press start';
+  if (timerId) { clearTimeout(timerId);        timerId = null; }
+  if (rafId)   { cancelAnimationFrame(rafId);  rafId   = null; }
+  stopSustain();
+  document.getElementById('startBtn').textContent          = '▶ Start';
+  document.getElementById('startBtn').className            = 'start-btn go';
+  document.getElementById('orb').className                 = 'circle-orb';
+  document.getElementById('phaseLabel').textContent        = 'Paused';
+  document.getElementById('phaseLabel').style.color        = '';
+  document.getElementById('circleTime').textContent        = '—';
+  document.getElementById('circleSub').textContent         = 'press start';
   document.getElementById('circleProgress').style.strokeDashoffset = CIRCUMFERENCE;
 }
+
+// Resume AudioContext when tab becomes visible again (some browsers suspend it)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && ctx && ctx.state === 'suspended') ctx.resume();
+});
 
 // ═══════════════════════════════════════════════
 //  UI wiring
@@ -951,7 +1443,12 @@ document.getElementById('startBtn').addEventListener('click', () => {
   running ? stopSession() : startSession();
 });
 
-// Sliders
+// Also allow clicking the circle orb to start/stop
+document.getElementById('orb').addEventListener('click', () => {
+  running ? stopSession() : startSession();
+});
+
+// Timing sliders
 ['sIn','sHold1','sOut','sHold2'].forEach((id, i) => {
   const valId = ['vIn','vHold1','vOut','vHold2'][i];
   document.getElementById(id).addEventListener('input', e => {
@@ -971,10 +1468,10 @@ document.querySelectorAll('[data-preset]').forEach(btn => {
     document.getElementById('sHold1').value = p.h1;
     document.getElementById('sOut').value   = p.outS;
     document.getElementById('sHold2').value = p.h2;
-    document.getElementById('vIn').textContent    = p.inS.toFixed(1) + ' s';
-    document.getElementById('vHold1').textContent = p.h1.toFixed(1) + ' s';
+    document.getElementById('vIn').textContent    = p.inS.toFixed(1)  + ' s';
+    document.getElementById('vHold1').textContent = p.h1.toFixed(1)   + ' s';
     document.getElementById('vOut').textContent   = p.outS.toFixed(1) + ' s';
-    document.getElementById('vHold2').textContent = p.h2.toFixed(1) + ' s';
+    document.getElementById('vHold2').textContent = p.h2.toFixed(1)   + ' s';
     setActivePreset(key);
     renderTimeline();
     if (running) { stopSession(); startSession(); }
@@ -987,24 +1484,99 @@ function setActivePreset(key) {
   if (btn) btn.classList.add('active');
 }
 
+// Solfeggio panel population
+(function buildSolfeggioPanel() {
+  const grid = document.getElementById('solfGrid');
+  const solfIn  = document.getElementById('solfIn');
+  const solfOut = document.getElementById('solfOut');
+
+  // Populate both selects
+  SOLFEGGIO.forEach(s => {
+    [solfIn, solfOut].forEach(sel => {
+      const opt = document.createElement('option');
+      opt.value = s.hz;
+      opt.textContent = `${s.hz} Hz — ${s.name}`;
+      sel.appendChild(opt);
+    });
+  });
+  solfIn.value  = currentSolfeggioInHz;
+  solfOut.value = currentSolfeggioOutHz;
+
+  solfIn.addEventListener('change', () => {
+    currentSolfeggioInHz = parseInt(solfIn.value);
+    currentSolfeggioHz   = currentSolfeggioInHz;
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+    playNote('solfeggio', 'mid');
+  });
+  solfOut.addEventListener('change', () => {
+    currentSolfeggioOutHz = parseInt(solfOut.value);
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+  });
+
+  // Preview grid — tap to hear only, no state change
+  SOLFEGGIO.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'solf-btn';
+    btn.dataset.hz = s.hz;
+    btn.innerHTML = `<span class="solf-hz">${s.hz} Hz</span><span class="solf-name">${s.name}</span>`;
+    btn.addEventListener('click', () => {
+      // Flash animation only — no state change
+      btn.classList.add('flash');
+      setTimeout(() => btn.classList.remove('flash'), 500);
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+      // Preview the clicked frequency directly without touching currentSolfeggioInHz
+      const ac2 = getCtx();
+      const o = ac2.createOscillator();
+      const gP = ac2.createGain();
+      o.type = 'sine'; o.frequency.value = s.hz;
+      o.connect(gP); gP.connect(masterGain);
+      const t = ac2.currentTime;
+      gP.gain.setValueAtTime(0, t);
+      gP.gain.linearRampToValueAtTime(parseFloat(document.getElementById('volSlider').value) * 0.42, t + 0.08);
+      gP.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
+      o.start(t); o.stop(t + 3.0);
+    });
+    grid.appendChild(btn);
+  });
+})();
+
+// Custom freq panel wiring
+document.getElementById('customFreqSlider').addEventListener('input', e => {
+  customFreqHz = parseInt(e.target.value);
+  document.getElementById('customFreqVal').textContent = customFreqHz + ' Hz';
+  if (currentInstr === 'custom_freq' && ctx) playNote('custom_freq', 'mid');
+});
+
+document.getElementById('customFreqSliderOut').addEventListener('input', e => {
+  customFreqHzOut = parseInt(e.target.value);
+  document.getElementById('customFreqValOut').textContent = customFreqHzOut + ' Hz';
+});
+
 // Instruments
 document.querySelectorAll('[data-instr]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-instr]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentInstr = btn.dataset.instr;
-    // Preview
+    // Show/hide sub-panels
+    document.getElementById('solfeggioPanel').style.display  = currentInstr === 'solfeggio'   ? 'block' : 'none';
+    document.getElementById('customFreqPanel').style.display = currentInstr === 'custom_freq' ? 'block' : 'none';
     if (currentInstr !== 'none') {
       getCtx();
-      if (ctx && ctx.state === 'suspended') ctx.resume();
-      playNote(currentInstr, 'mid', 0.8);
+      if (ctx.state === 'suspended') ctx.resume();
+      playNote(currentInstr, 'mid');
     }
   });
 });
 
-// Volume
+// Cue volume
 document.getElementById('volSlider').addEventListener('input', e => {
   if (masterGain) masterGain.gain.value = parseFloat(e.target.value);
+});
+
+// Sustain / pad volume — live update
+document.getElementById('sustainSlider').addEventListener('input', e => {
+  if (sustainGain) sustainGain.gain.value = parseFloat(e.target.value);
 });
 
 // Theme toggle
@@ -1012,18 +1584,18 @@ let lightMode = false;
 document.getElementById('themeBtn').addEventListener('click', () => {
   lightMode = !lightMode;
   if (lightMode) {
-    document.documentElement.style.setProperty('--bg', '#f0f4f8');
+    document.documentElement.style.setProperty('--bg',      '#f0f4f8');
     document.documentElement.style.setProperty('--surface', '#ffffff');
-    document.documentElement.style.setProperty('--border', '#d0d7de');
-    document.documentElement.style.setProperty('--text', '#24292f');
-    document.documentElement.style.setProperty('--muted', '#57606a');
+    document.documentElement.style.setProperty('--border',  '#d0d7de');
+    document.documentElement.style.setProperty('--text',    '#24292f');
+    document.documentElement.style.setProperty('--muted',   '#57606a');
     document.getElementById('themeBtn').textContent = '🌙 Dark';
   } else {
-    document.documentElement.style.setProperty('--bg', '#0d1117');
+    document.documentElement.style.setProperty('--bg',      '#0d1117');
     document.documentElement.style.setProperty('--surface', '#161b22');
-    document.documentElement.style.setProperty('--border', '#30363d');
-    document.documentElement.style.setProperty('--text', '#e6edf3');
-    document.documentElement.style.setProperty('--muted', '#8b949e');
+    document.documentElement.style.setProperty('--border',  '#30363d');
+    document.documentElement.style.setProperty('--text',    '#e6edf3');
+    document.documentElement.style.setProperty('--muted',   '#8b949e');
     document.getElementById('themeBtn').textContent = '☀️ Light';
   }
 });
