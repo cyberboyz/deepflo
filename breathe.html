@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Breathe — Precision Breathing App</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #79c0ff;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --inhale: #56d364;
+    --exhale: #f78166;
+    --hold: #d2a8ff;
+    --radius: 16px;
+    --panel-w: 340px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(13,17,23,.85);
+  }
+  .logo { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .header-btns { display: flex; gap: 10px; }
+  .icon-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: .8rem;
+    transition: background .15s, border-color .15s;
+  }
+  .icon-btn:hover { background: var(--border); border-color: var(--accent); }
+
+  /* ── Layout ── */
+  main {
+    flex: 1;
+    display: flex;
+    gap: 0;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--panel-w);
+    min-width: var(--panel-w);
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    background: var(--surface);
+  }
+  .section-title {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .presets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .preset-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 8px;
+    cursor: pointer;
+    font-size: .8rem;
+    text-align: center;
+    transition: all .15s;
+    line-height: 1.3;
+  }
+  .preset-btn .preset-name { font-weight: 600; display: block; }
+  .preset-btn .preset-desc { font-size: .68rem; color: var(--muted); }
+  .preset-btn:hover, .preset-btn.active {
+    border-color: var(--accent);
+    background: rgba(88,166,255,.08);
+    color: var(--accent2);
+  }
+
+  /* Sliders */
+  .slider-group { display: flex; flex-direction: column; gap: 14px; }
+  .slider-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+  }
+  .slider-label {
+    font-size: .82rem;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .dot-in { background: var(--inhale); }
+  .dot-hold { background: var(--hold); }
+  .dot-out { background: var(--exhale); }
+  .dot-hold2 { background: var(--hold); opacity: .6; }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 6px rgba(88,166,255,.5);
+    transition: transform .1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  .slider-val {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--accent2);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* Instrument picker */
+  .instrument-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+  }
+  .instr-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 4px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: .68rem;
+    transition: all .15s;
+  }
+  .instr-btn .emoji { font-size: 1.4rem; line-height: 1; }
+  .instr-btn:hover { border-color: var(--accent); background: rgba(88,166,255,.07); }
+  .instr-btn.active { border-color: var(--accent); background: rgba(88,166,255,.15); color: var(--accent2); }
+
+  /* Sound assignment */
+  .sound-assign { display: flex; flex-direction: column; gap: 8px; }
+  .assign-row {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    align-items: center;
+    gap: 8px;
+    font-size: .8rem;
+  }
+  .assign-label { color: var(--muted); white-space: nowrap; }
+  select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: .78rem;
+    cursor: pointer;
+    outline: none;
+  }
+  select:focus { border-color: var(--accent); }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .start-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .5px;
+  }
+  .start-btn.go {
+    background: linear-gradient(135deg, #238636, #2ea043);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(46,160,67,.35);
+  }
+  .start-btn.go:hover { box-shadow: 0 6px 28px rgba(46,160,67,.5); transform: translateY(-1px); }
+  .start-btn.stop {
+    background: linear-gradient(135deg, #da3633, #f85149);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(248,81,73,.35);
+  }
+  .volume-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+
+  /* ── Stage ── */
+  .stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phase-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color .4s;
+    min-height: 1.4em;
+  }
+
+  /* ── Circle ── */
+  .circle-wrap {
+    position: relative;
+    width: 280px;
+    height: 280px;
+  }
+  .circle-svg {
+    width: 280px; height: 280px;
+    position: absolute;
+    top: 0; left: 0;
+    transform: rotate(-90deg);
+  }
+  .circle-bg { fill: none; stroke: var(--border); stroke-width: 6; }
+  .circle-progress {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 816;
+    stroke-dashoffset: 816;
+    transition: stroke .4s;
+  }
+  .circle-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .circle-orb {
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(88,166,255,.18), rgba(88,166,255,.04) 70%);
+    border: 1.5px solid rgba(88,166,255,.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: transform .3s ease, box-shadow .4s;
+  }
+  .circle-orb.inhaling {
+    transform: scale(1.15);
+    box-shadow: 0 0 60px rgba(86,211,100,.25), 0 0 20px rgba(86,211,100,.1);
+  }
+  .circle-orb.exhaling {
+    transform: scale(0.88);
+    box-shadow: 0 0 60px rgba(247,129,102,.2), 0 0 20px rgba(247,129,102,.08);
+  }
+  .circle-orb.holding {
+    transform: scale(1.1);
+    box-shadow: 0 0 50px rgba(210,168,255,.2);
+  }
+  .circle-time {
+    font-size: 2.8rem;
+    font-weight: 200;
+    letter-spacing: -1px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .circle-sublabel {
+    font-size: .78rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Cycle counter */
+  .cycle-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: .85rem;
+    color: var(--muted);
+  }
+  .cycle-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .cycle-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background .3s;
+  }
+  .cycle-dot.done { background: var(--accent); }
+
+  /* Progress bar (full cycle) */
+  .timeline {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .timeline-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    overflow: hidden;
+    display: flex;
+  }
+  .tl-segment {
+    height: 100%;
+    border-radius: 0;
+    transition: opacity .2s;
+  }
+  .tl-labels {
+    display: flex;
+    font-size: .68rem;
+    color: var(--muted);
+  }
+  .tl-lbl {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .tl-lbl:not(:last-child)::after { content: '·'; margin: 0 8px; color: var(--border); }
+
+  /* Ripple bg */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid rgba(88,166,255,.08);
+    pointer-events: none;
+    animation: ripple-out 3s ease-out infinite;
+    opacity: 0;
+  }
+  @keyframes ripple-out {
+    0% { transform: scale(.8); opacity: .5; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  /* Idle state */
+  .idle-hint {
+    font-size: .85rem;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    :root { --panel-w: 100%; }
+    main { flex-direction: column; }
+    .sidebar {
+      width: 100%; min-width: 0;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      max-height: 55vh;
+    }
+    .stage { padding: 30px 16px; }
+    .circle-wrap, .circle-svg { width: 240px; height: 240px; }
+    .circle-orb { width: 186px; height: 186px; }
+    .circle-svg .circle-bg, .circle-svg .circle-progress { stroke-width: 5; }
+    /* 2πr for r=117 ≈ 735 */
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">b<span>r</span>eathe</div>
+  <div class="header-btns">
+    <button class="icon-btn" id="themeBtn" title="Toggle theme">☀️ Light</button>
+    <button class="icon-btn" id="fullBtn" title="Fullscreen">⛶ Full</button>
+  </div>
+</header>
+
+<main>
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+
+    <div>
+      <div class="section-title">Presets</div>
+      <div class="presets" id="presetBtns">
+        <button class="preset-btn active" data-preset="478">
+          <span class="preset-name">4-7-8</span>
+          <span class="preset-desc">Relaxation</span>
+        </button>
+        <button class="preset-btn" data-preset="box">
+          <span class="preset-name">Box</span>
+          <span class="preset-desc">4-4-4-4</span>
+        </button>
+        <button class="preset-btn" data-preset="calm">
+          <span class="preset-name">Calm</span>
+          <span class="preset-desc">5-0-5-0</span>
+        </button>
+        <button class="preset-btn" data-preset="wim">
+          <span class="preset-name">Wim Hof</span>
+          <span class="preset-desc">2-0-2-0</span>
+        </button>
+        <button class="preset-btn" data-preset="deep">
+          <span class="preset-name">Deep</span>
+          <span class="preset-desc">6-2-8-0</span>
+        </button>
+        <button class="preset-btn" data-preset="custom">
+          <span class="preset-name">Custom</span>
+          <span class="preset-desc">→ sliders</span>
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">Timing (0.1 s precision)</div>
+      <div class="slider-group">
+        <div>
+          <div class="slider-label"><span class="dot dot-in"></span>Inhale</div>
+          <div class="slider-row">
+            <input type="range" id="sIn" min="0.5" max="20" step="0.1" value="4">
+            <span class="slider-val" id="vIn">4.0 s</span>
+          </div>
+        </div>
+        <div>
+          <div class="slider-label"><span class="dot dot-hold"></span>Hold In</div>
+          <div class="slider-row">
+            <input type="range" id="sHold1" min="0" max="20" step="0.1" value="7">
+            <span class="slider-val" id="vHold1">7.0 s</span>
+          </div>
+        </div>
+        <div>
+          <div class="slider-label"><span class="dot dot-out"></span>Exhale</div>
+          <div class="slider-row">
+            <input type="range" id="sOut" min="0.5" max="20" step="0.1" value="8">
+            <span class="slider-val" id="vOut">8.0 s</span>
+          </div>
+        </div>
+        <div>
+          <div class="slider-label"><span class="dot dot-hold2"></span>Hold Out</div>
+          <div class="slider-row">
+            <input type="range" id="sHold2" min="0" max="20" step="0.1" value="0">
+            <span class="slider-val" id="vHold2">0.0 s</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">Instrument</div>
+      <div class="instrument-grid" id="instrGrid">
+        <button class="instr-btn active" data-instr="sine">
+          <span class="emoji">〰️</span>Sine Tone
+        </button>
+        <button class="instr-btn" data-instr="bell">
+          <span class="emoji">🔔</span>Bell
+        </button>
+        <button class="instr-btn" data-instr="bowl">
+          <span class="emoji">🎵</span>Singing Bowl
+        </button>
+        <button class="instr-btn" data-instr="flute">
+          <span class="emoji">🪈</span>Flute
+        </button>
+        <button class="instr-btn" data-instr="chime">
+          <span class="emoji">✨</span>Wind Chime
+        </button>
+        <button class="instr-btn" data-instr="drone">
+          <span class="emoji">🌊</span>Ocean Drone
+        </button>
+        <button class="instr-btn" data-instr="whisper">
+          <span class="emoji">🌬️</span>Breath
+        </button>
+        <button class="instr-btn" data-instr="harp">
+          <span class="emoji">🎶</span>Harp Glide
+        </button>
+        <button class="instr-btn" data-instr="none">
+          <span class="emoji">🔕</span>Silent
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">Sound Assignment</div>
+      <div class="sound-assign">
+        <div class="assign-row">
+          <span class="dot dot-in" style="margin-top:1px"></span>
+          <span class="assign-label">Inhale cue</span>
+          <select id="cueIn">
+            <option value="high">High note</option>
+            <option value="mid">Mid note</option>
+            <option value="low">Low note</option>
+          </select>
+        </div>
+        <div class="assign-row">
+          <span class="dot dot-out" style="margin-top:1px"></span>
+          <span class="assign-label">Exhale cue</span>
+          <select id="cueOut">
+            <option value="high">High note</option>
+            <option value="mid" selected>Mid note</option>
+            <option value="low">Low note</option>
+          </select>
+        </div>
+        <div class="assign-row">
+          <span class="dot dot-hold" style="margin-top:1px"></span>
+          <span class="assign-label">Hold cue</span>
+          <select id="cueHold">
+            <option value="high">High note</option>
+            <option value="mid">Mid note</option>
+            <option value="low" selected>Low note</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="volume-row">
+        <span>🔈</span>
+        <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.6">
+        <span>🔊</span>
+      </div>
+      <button class="start-btn go" id="startBtn">▶ Start</button>
+    </div>
+
+  </aside>
+
+  <!-- ── Stage ── -->
+  <section class="stage" id="stage">
+    <!-- Ripple layers -->
+    <div class="ripple" style="width:340px;height:340px;animation-delay:0s"></div>
+    <div class="ripple" style="width:340px;height:340px;animation-delay:1s"></div>
+    <div class="ripple" style="width:340px;height:340px;animation-delay:2s"></div>
+
+    <div class="phase-label" id="phaseLabel">Ready</div>
+
+    <div class="circle-wrap" id="circleWrap">
+      <svg class="circle-svg" viewBox="0 0 280 280">
+        <circle class="circle-bg" cx="140" cy="140" r="130"/>
+        <circle class="circle-progress" id="circleProgress" cx="140" cy="140" r="130"/>
+      </svg>
+      <div class="circle-inner">
+        <div class="circle-orb" id="orb">
+          <div class="circle-time" id="circleTime">—</div>
+          <div class="circle-sublabel" id="circleSub">press start</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cycle-row">
+      <span>Cycle</span>
+      <div class="cycle-dots" id="cycleDots">
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+      </div>
+      <span id="cycleCount">0</span>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-bar" id="tlBar"></div>
+      <div class="tl-labels" id="tlLabels"></div>
+    </div>
+
+  </section>
+</main>
+
+<script>
+// ═══════════════════════════════════════════════
+//  Audio Engine
+// ═══════════════════════════════════════════════
+let ctx = null;
+let masterGain = null;
+
+function getCtx() {
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = ctx.createGain();
+    masterGain.gain.value = parseFloat(document.getElementById('volSlider').value);
+    masterGain.connect(ctx.destination);
+  }
+  return ctx;
+}
+
+const NOTE_FREQS = {
+  high: { sine: 660, bell: 880, bowl: 528, flute: 784, chime: 1047, drone: 220, whisper: 440, harp: 880 },
+  mid:  { sine: 440, bell: 660, bowl: 396, flute: 587, chime: 784,  drone: 174, whisper: 330, harp: 659 },
+  low:  { sine: 264, bell: 440, bowl: 264, flute: 392, chime: 523,  drone: 130, whisper: 220, harp: 440 },
+};
+
+function playNote(instrument, noteKey, duration = 1.2) {
+  if (instrument === 'none') return;
+  const ac = getCtx();
+  const freq = NOTE_FREQS[noteKey][instrument] || 440;
+  const now = ac.currentTime;
+  const vol = parseFloat(document.getElementById('volSlider').value);
+
+  const g = ac.createGain();
+  g.connect(masterGain);
+
+  switch(instrument) {
+    case 'sine': {
+      const o = ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      o.connect(g);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol * 0.35, now + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, now + Math.max(duration, 0.5));
+      o.start(now); o.stop(now + duration + 0.1);
+      break;
+    }
+    case 'bell': {
+      const o = ac.createOscillator();
+      const o2 = ac.createOscillator();
+      o.type = 'sine'; o.frequency.value = freq;
+      o2.type = 'sine'; o2.frequency.value = freq * 2.756;
+      const g2 = ac.createGain();
+      o.connect(g); o2.connect(g2); g2.connect(masterGain);
+      g.gain.setValueAtTime(vol * 0.4, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + Math.max(duration * 1.5, 1.5));
+      g2.gain.setValueAtTime(vol * 0.15, now);
+      g2.gain.exponentialRampToValueAtTime(0.001, now + Math.max(duration, 1));
+      o.start(now); o.stop(now + duration * 2);
+      o2.start(now); o2.stop(now + duration * 2);
+      break;
+    }
+    case 'bowl': {
+      // Singing bowl: slow attack, rich harmonics
+      const harmonics = [1, 2.04, 3.11, 4.22];
+      harmonics.forEach((h, i) => {
+        const o = ac.createOscillator();
+        const gH = ac.createGain();
+        o.type = 'sine';
+        o.frequency.value = freq * h;
+        o.connect(gH); gH.connect(masterGain);
+        const hVol = vol * [0.4, 0.15, 0.08, 0.04][i];
+        gH.gain.setValueAtTime(0, now);
+        gH.gain.linearRampToValueAtTime(hVol, now + 0.4);
+        gH.gain.exponentialRampToValueAtTime(0.001, now + Math.max(duration * 2, 2));
+        o.start(now); o.stop(now + duration * 2 + 0.2);
+      });
+      break;
+    }
+    case 'flute': {
+      const o = ac.createOscillator();
+      const noise = ac.createOscillator();
+      o.type = 'sine'; o.frequency.value = freq;
+      noise.type = 'triangle'; noise.frequency.value = freq * 1.01;
+      const gN = ac.createGain();
+      noise.connect(gN); gN.connect(g); o.connect(g);
+      gN.gain.value = vol * 0.06;
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol * 0.3, now + 0.15);
+      g.gain.setValueAtTime(vol * 0.3, now + Math.max(duration - 0.2, 0.2));
+      g.gain.linearRampToValueAtTime(0, now + duration + 0.1);
+      o.start(now); o.stop(now + duration + 0.2);
+      noise.start(now); noise.stop(now + duration + 0.2);
+      break;
+    }
+    case 'chime': {
+      const freqs = [freq, freq * 1.335, freq * 1.587, freq * 2];
+      freqs.forEach((f, i) => {
+        const o = ac.createOscillator();
+        const gC = ac.createGain();
+        o.type = 'sine'; o.frequency.value = f;
+        o.connect(gC); gC.connect(masterGain);
+        const delay = i * 0.12;
+        gC.gain.setValueAtTime(0, now + delay);
+        gC.gain.linearRampToValueAtTime(vol * 0.2, now + delay + 0.02);
+        gC.gain.exponentialRampToValueAtTime(0.001, now + delay + 1.5);
+        o.start(now + delay); o.stop(now + delay + 2);
+      });
+      break;
+    }
+    case 'drone': {
+      const o = ac.createOscillator();
+      const o2 = ac.createOscillator();
+      o.type = 'sawtooth'; o.frequency.value = freq;
+      o2.type = 'sine'; o2.frequency.value = freq * 1.005; // slight detune
+      const filter = ac.createBiquadFilter();
+      filter.type = 'lowpass'; filter.frequency.value = 600;
+      o.connect(filter); o2.connect(filter); filter.connect(g);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol * 0.18, now + 0.5);
+      g.gain.setValueAtTime(vol * 0.18, now + Math.max(duration - 0.4, 0.5));
+      g.gain.linearRampToValueAtTime(0, now + duration + 0.2);
+      o.start(now); o.stop(now + duration + 0.3);
+      o2.start(now); o2.stop(now + duration + 0.3);
+      break;
+    }
+    case 'whisper': {
+      // White noise shaped like a breath
+      const bufLen = ac.sampleRate * (duration + 0.5);
+      const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+      const src = ac.createBufferSource(); src.buffer = buf;
+      const filter = ac.createBiquadFilter();
+      filter.type = 'bandpass'; filter.frequency.value = freq; filter.Q.value = 0.8;
+      src.connect(filter); filter.connect(g);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol * 0.25, now + 0.3);
+      g.gain.setValueAtTime(vol * 0.25, now + Math.max(duration - 0.3, 0.3));
+      g.gain.linearRampToValueAtTime(0, now + duration + 0.1);
+      src.start(now); src.stop(now + duration + 0.3);
+      break;
+    }
+    case 'harp': {
+      // Gliding arpeggio
+      const notes = [freq, freq * 1.25, freq * 1.5, freq * 2];
+      notes.forEach((f, i) => {
+        const o = ac.createOscillator();
+        const gH = ac.createGain();
+        o.type = 'sine'; o.frequency.value = f;
+        o.connect(gH); gH.connect(masterGain);
+        const d = i * (duration / 4.5);
+        gH.gain.setValueAtTime(0, now + d);
+        gH.gain.linearRampToValueAtTime(vol * 0.22, now + d + 0.03);
+        gH.gain.exponentialRampToValueAtTime(0.001, now + d + 1.2);
+        o.start(now + d); o.stop(now + d + 1.5);
+      });
+      break;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  State
+// ═══════════════════════════════════════════════
+const PRESETS = {
+  '478': { inS: 4,   h1: 7,  outS: 8,  h2: 0  },
+  'box':  { inS: 4,   h1: 4,  outS: 4,  h2: 4  },
+  'calm': { inS: 5,   h1: 0,  outS: 5,  h2: 0  },
+  'wim':  { inS: 2,   h1: 0,  outS: 2,  h2: 0  },
+  'deep': { inS: 6,   h1: 2,  outS: 8,  h2: 0  },
+};
+
+let running = false;
+let rafId = null;
+let phaseStart = 0;
+let phaseIndex = 0;
+let cycleCount = 0;
+let phases = [];
+let currentInstr = 'sine';
+
+const PHASE_COLORS = {
+  inhale: '#56d364',
+  hold1:  '#d2a8ff',
+  exhale: '#f78166',
+  hold2:  '#d2a8ff',
+};
+const CIRCUMFERENCE = 2 * Math.PI * 130; // ≈ 816.81
+
+function getTimings() {
+  return {
+    inS:  parseFloat(document.getElementById('sIn').value),
+    h1:   parseFloat(document.getElementById('sHold1').value),
+    outS: parseFloat(document.getElementById('sOut').value),
+    h2:   parseFloat(document.getElementById('sHold2').value),
+  };
+}
+
+function buildPhases() {
+  const t = getTimings();
+  const arr = [];
+  if (t.inS  > 0) arr.push({ name: 'inhale', label: 'Inhale',    dur: t.inS,  orbClass: 'inhaling', color: PHASE_COLORS.inhale });
+  if (t.h1   > 0) arr.push({ name: 'hold1',  label: 'Hold',      dur: t.h1,   orbClass: 'holding',  color: PHASE_COLORS.hold1  });
+  if (t.outS > 0) arr.push({ name: 'exhale', label: 'Exhale',    dur: t.outS, orbClass: 'exhaling', color: PHASE_COLORS.exhale });
+  if (t.h2   > 0) arr.push({ name: 'hold2',  label: 'Hold Out',  dur: t.h2,   orbClass: 'holding',  color: PHASE_COLORS.hold2  });
+  return arr;
+}
+
+function renderTimeline() {
+  phases = buildPhases();
+  const total = phases.reduce((s, p) => s + p.dur, 0);
+  const bar = document.getElementById('tlBar');
+  const lbl = document.getElementById('tlLabels');
+  bar.innerHTML = '';
+  lbl.innerHTML = '';
+  phases.forEach(p => {
+    const seg = document.createElement('div');
+    seg.className = 'tl-segment';
+    seg.style.width = (p.dur / total * 100) + '%';
+    seg.style.background = p.color;
+    seg.style.opacity = '.5';
+    bar.appendChild(seg);
+    const l = document.createElement('span');
+    l.className = 'tl-lbl';
+    l.innerHTML = `<span class="dot" style="background:${p.color}"></span>${p.label} ${p.dur.toFixed(1)}s`;
+    lbl.appendChild(l);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  Breathing loop
+// ═══════════════════════════════════════════════
+function startPhase(idx) {
+  phaseIndex = idx % phases.length;
+  phaseStart = performance.now();
+  const p = phases[phaseIndex];
+
+  // Cue sound
+  const instr = currentInstr;
+  let cueNote;
+  if (p.name === 'inhale') cueNote = document.getElementById('cueIn').value;
+  else if (p.name === 'exhale') cueNote = document.getElementById('cueOut').value;
+  else cueNote = document.getElementById('cueHold').value;
+  playNote(instr, cueNote, p.dur);
+
+  // Update UI
+  const orb = document.getElementById('orb');
+  orb.className = 'circle-orb ' + p.orbClass;
+  document.getElementById('phaseLabel').textContent = p.label;
+  document.getElementById('phaseLabel').style.color = p.color;
+  document.getElementById('circleSub').textContent = p.label;
+  document.getElementById('circleProgress').style.stroke = p.color;
+}
+
+function loop(ts) {
+  if (!running) return;
+  const p = phases[phaseIndex];
+  const elapsed = (ts - phaseStart) / 1000;
+  const frac = Math.min(elapsed / p.dur, 1);
+  const remaining = Math.max(p.dur - elapsed, 0);
+
+  document.getElementById('circleTime').textContent = remaining.toFixed(1);
+  const offset = CIRCUMFERENCE * (1 - frac);
+  document.getElementById('circleProgress').style.strokeDashoffset = offset;
+
+  if (elapsed >= p.dur) {
+    const nextIdx = phaseIndex + 1;
+    if (nextIdx >= phases.length) {
+      // completed one cycle
+      cycleCount++;
+      document.getElementById('cycleCount').textContent = cycleCount;
+      const dots = document.querySelectorAll('.cycle-dot');
+      dots[(cycleCount - 1) % 8].classList.add('done');
+    }
+    startPhase(nextIdx);
+  }
+
+  rafId = requestAnimationFrame(loop);
+}
+
+function startSession() {
+  if (running) return;
+  getCtx(); // unlock AudioContext on user gesture
+  if (ctx && ctx.state === 'suspended') ctx.resume();
+  phases = buildPhases();
+  if (phases.length === 0) return;
+  running = true;
+  cycleCount = 0;
+  document.querySelectorAll('.cycle-dot').forEach(d => d.classList.remove('done'));
+  document.getElementById('cycleCount').textContent = '0';
+  document.getElementById('startBtn').textContent = '■ Stop';
+  document.getElementById('startBtn').className = 'start-btn stop';
+  startPhase(0);
+  rafId = requestAnimationFrame(loop);
+}
+
+function stopSession() {
+  running = false;
+  if (rafId) cancelAnimationFrame(rafId);
+  document.getElementById('startBtn').textContent = '▶ Start';
+  document.getElementById('startBtn').className = 'start-btn go';
+  document.getElementById('orb').className = 'circle-orb';
+  document.getElementById('phaseLabel').textContent = 'Paused';
+  document.getElementById('phaseLabel').style.color = '';
+  document.getElementById('circleTime').textContent = '—';
+  document.getElementById('circleSub').textContent = 'press start';
+  document.getElementById('circleProgress').style.strokeDashoffset = CIRCUMFERENCE;
+}
+
+// ═══════════════════════════════════════════════
+//  UI wiring
+// ═══════════════════════════════════════════════
+document.getElementById('startBtn').addEventListener('click', () => {
+  running ? stopSession() : startSession();
+});
+
+// Sliders
+['sIn','sHold1','sOut','sHold2'].forEach((id, i) => {
+  const valId = ['vIn','vHold1','vOut','vHold2'][i];
+  document.getElementById(id).addEventListener('input', e => {
+    document.getElementById(valId).textContent = parseFloat(e.target.value).toFixed(1) + ' s';
+    setActivePreset('custom');
+    renderTimeline();
+  });
+});
+
+// Presets
+document.querySelectorAll('[data-preset]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.preset;
+    if (key === 'custom') { setActivePreset('custom'); return; }
+    const p = PRESETS[key];
+    document.getElementById('sIn').value    = p.inS;
+    document.getElementById('sHold1').value = p.h1;
+    document.getElementById('sOut').value   = p.outS;
+    document.getElementById('sHold2').value = p.h2;
+    document.getElementById('vIn').textContent    = p.inS.toFixed(1) + ' s';
+    document.getElementById('vHold1').textContent = p.h1.toFixed(1) + ' s';
+    document.getElementById('vOut').textContent   = p.outS.toFixed(1) + ' s';
+    document.getElementById('vHold2').textContent = p.h2.toFixed(1) + ' s';
+    setActivePreset(key);
+    renderTimeline();
+    if (running) { stopSession(); startSession(); }
+  });
+});
+
+function setActivePreset(key) {
+  document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`[data-preset="${key}"]`);
+  if (btn) btn.classList.add('active');
+}
+
+// Instruments
+document.querySelectorAll('[data-instr]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-instr]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentInstr = btn.dataset.instr;
+    // Preview
+    if (currentInstr !== 'none') {
+      getCtx();
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+      playNote(currentInstr, 'mid', 0.8);
+    }
+  });
+});
+
+// Volume
+document.getElementById('volSlider').addEventListener('input', e => {
+  if (masterGain) masterGain.gain.value = parseFloat(e.target.value);
+});
+
+// Theme toggle
+let lightMode = false;
+document.getElementById('themeBtn').addEventListener('click', () => {
+  lightMode = !lightMode;
+  if (lightMode) {
+    document.documentElement.style.setProperty('--bg', '#f0f4f8');
+    document.documentElement.style.setProperty('--surface', '#ffffff');
+    document.documentElement.style.setProperty('--border', '#d0d7de');
+    document.documentElement.style.setProperty('--text', '#24292f');
+    document.documentElement.style.setProperty('--muted', '#57606a');
+    document.getElementById('themeBtn').textContent = '🌙 Dark';
+  } else {
+    document.documentElement.style.setProperty('--bg', '#0d1117');
+    document.documentElement.style.setProperty('--surface', '#161b22');
+    document.documentElement.style.setProperty('--border', '#30363d');
+    document.documentElement.style.setProperty('--text', '#e6edf3');
+    document.documentElement.style.setProperty('--muted', '#8b949e');
+    document.getElementById('themeBtn').textContent = '☀️ Light';
+  }
+});
+
+// Fullscreen
+document.getElementById('fullBtn').addEventListener('click', () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+});
+
+// Init
+renderTimeline();
+</script>
+</body>
+</html>
