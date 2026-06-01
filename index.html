@@ -444,7 +444,15 @@
     <div>
       <div class="section-title">Presets</div>
       <div class="presets" id="presetBtns">
-        <button class="preset-btn active" data-preset="478">
+        <button class="preset-btn active" data-preset="46">
+          <span class="preset-name">4-6</span>
+          <span class="preset-desc">Default</span>
+        </button>
+        <button class="preset-btn" data-preset="37">
+          <span class="preset-name">3-7</span>
+          <span class="preset-desc">Relaxation</span>
+        </button>
+        <button class="preset-btn" data-preset="478">
           <span class="preset-name">4-7-8</span>
           <span class="preset-desc">Relaxation</span>
         </button>
@@ -484,15 +492,15 @@
         <div>
           <div class="slider-label"><span class="dot dot-hold"></span>Hold In</div>
           <div class="slider-row">
-            <input type="range" id="sHold1" min="0" max="20" step="0.1" value="7">
-            <span class="slider-val" id="vHold1">7.0 s</span>
+            <input type="range" id="sHold1" min="0" max="20" step="0.1" value="0">
+            <span class="slider-val" id="vHold1">0.0 s</span>
           </div>
         </div>
         <div>
           <div class="slider-label"><span class="dot dot-out"></span>Exhale</div>
           <div class="slider-row">
-            <input type="range" id="sOut" min="0.5" max="20" step="0.1" value="8">
-            <span class="slider-val" id="vOut">8.0 s</span>
+            <input type="range" id="sOut" min="0.5" max="20" step="0.1" value="6">
+            <span class="slider-val" id="vOut">6.0 s</span>
           </div>
         </div>
         <div>
@@ -791,6 +799,8 @@ function playNote(instrument, noteKey, duration = 1.2) {
 //  State
 // ═══════════════════════════════════════════════
 const PRESETS = {
+  '46': { inS: 4,   h1: 0,  outS: 6,  h2: 0  },
+  '37': { inS: 3,   h1: 0,  outS: 7,  h2: 0  },
   '478': { inS: 4,   h1: 7,  outS: 8,  h2: 0  },
   'box':  { inS: 4,   h1: 4,  outS: 4,  h2: 4  },
   'calm': { inS: 5,   h1: 0,  outS: 5,  h2: 0  },
