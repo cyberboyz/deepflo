@@ -6,13 +6,13 @@ A minimalist, open-source breathing exercise app with 0.1-second timing precisio
 
 ---
 
-## what it does
+## What it does
 
 deepflo guides you through breathing patterns — inhale, hold, exhale, hold — with exact timing you control down to a tenth of a second. Each phase can be marked with a different musical instrument cue so your ears lead and your mind follows.
 
 ---
 
-## logo concept
+## Logo concept
 
 ```
   d e e p f l o
@@ -22,10 +22,10 @@ deepflo guides you through breathing patterns — inhale, hold, exhale, hold —
      〰〰〰
 ```
 
-**Mark 1 — The Deepening Wave**
+**Mark 1 — The deepening wave**
 A single sine wave that drops and widens as it moves right — shallow at the *d*, deepest at the *o*. Wordmark only, lowercase, tracking slightly wide. No icon needed at launch.
 
-**Mark 2 — The Breath Line**
+**Mark 2 — The breath line**
 One horizontal line that dips into a smooth U-curve at the center — like a lung filling. Works at 16px favicon size. Monochrome first, teal accent optional.
 
 **Mark 3 — Stacked letterform**
@@ -43,22 +43,22 @@ One horizontal line that dips into a smooth U-curve at the center — like a lun
 
 ---
 
-## tagline options
+## Tagline options
 
-| tagline | tone |
+| Tagline | Tone |
 |---|---|
-| *breathe with precision* | clean, functional |
-| *slow down on purpose* | intentional, calm |
-| *your rhythm, exactly* | personal, confident |
-| *go deeper, every breath* | evocative |
-| *the breath you control* | empowering |
-| *flow on your terms* | soft, modern |
+| *breathe with precision* | Clean, functional |
+| *slow down on purpose* | Intentional, calm |
+| *your rhythm, exactly* | Personal, confident |
+| *go deeper, every breath* | Evocative |
+| *the breath you control* | Empowering |
+| *flow on your terms* | Soft, modern |
 
 **Recommended:** `breathe with precision` — says everything, says nothing extra.
 
 ---
 
-## features
+## Features
 
 - **0.1s precision** on all four breath phases: inhale · hold in · exhale · hold out
 - **5 built-in presets**: 4-7-8, Box, Calm, Wim Hof, Deep
@@ -72,13 +72,13 @@ One horizontal line that dips into a smooth U-curve at the center — like a lun
 
 ---
 
-## getting started
+## Getting started
 
-### use it instantly
+### Use it instantly
 
 Open `index.html` in any modern browser. No build step, no install, no server needed.
 
-### deploy to Vercel (30 seconds)
+### Deploy to Vercel (30 seconds)
 
 1. Fork or clone this repo
 2. Go to [vercel.com](https://vercel.com) → New Project → Import your repo
@@ -86,7 +86,7 @@ Open `index.html` in any modern browser. No build step, no install, no server ne
 
 Or drag `index.html` straight into the Vercel dashboard.
 
-### run locally
+### Run locally
 
 ```bash
 git clone https://github.com/yourusername/deepflo
@@ -104,36 +104,36 @@ open index.html
 
 ---
 
-## breath presets
+## Breath presets
 
-| preset | inhale | hold in | exhale | hold out | best for |
+| Preset | Inhale | Hold in | Exhale | Hold out | Best for |
 |---|---|---|---|---|---|
-| 4-7-8 | 4.0s | 7.0s | 8.0s | 0.0s | sleep, anxiety relief |
-| Box | 4.0s | 4.0s | 4.0s | 4.0s | focus, stress reset |
-| Calm | 5.0s | 0.0s | 5.0s | 0.0s | everyday use |
-| Wim Hof | 2.0s | 0.0s | 2.0s | 0.0s | energy, activation |
-| Deep | 6.0s | 2.0s | 8.0s | 0.0s | deep relaxation |
-| Custom | — | — | — | — | your own pattern |
+| 4-7-8 | 4.0s | 7.0s | 8.0s | 0.0s | Sleep, anxiety relief |
+| Box | 4.0s | 4.0s | 4.0s | 4.0s | Focus, stress reset |
+| Calm | 5.0s | 0.0s | 5.0s | 0.0s | Everyday use |
+| Wim Hof | 2.0s | 0.0s | 2.0s | 0.0s | Energy, activation |
+| Deep | 6.0s | 2.0s | 8.0s | 0.0s | Deep relaxation |
+| Custom | — | — | — | — | Your own pattern |
 
 ---
 
-## instrument reference
+## Instrument reference
 
-| instrument | character | good for |
+| Instrument | Character | Good for |
 |---|---|---|
-| Sine Tone | Pure, clean | focus sessions |
-| Bell | Decaying shimmer | meditation |
-| Singing Bowl | Slow, harmonic | deep relaxation |
-| Flute | Breathy, warm | gentle practice |
-| Wind Chime | Cascading arpeggio | stress relief |
-| Ocean Drone | Low filtered pad | sleep / background |
-| Breath | Shaped white noise | breath awareness |
-| Harp Glide | Ascending arpeggio | morning sessions |
-| Silent | No audio | visual-only |
+| Sine Tone | Pure, clean | Focus sessions |
+| Bell | Decaying shimmer | Meditation |
+| Singing Bowl | Slow, harmonic | Deep relaxation |
+| Flute | Breathy, warm | Gentle practice |
+| Wind Chime | Cascading arpeggio | Stress relief |
+| Ocean Drone | Low filtered pad | Sleep / background |
+| Breath | Shaped white noise | Breath awareness |
+| Harp Glide | Ascending arpeggio | Morning sessions |
+| Silent | No audio | Visual-only |
 
 ---
 
-## file structure
+## File structure
 
 ```
 deepflo/
@@ -144,20 +144,20 @@ That's it. Everything — layout, logic, audio engine — lives in one file. No 
 
 ---
 
-## browser support
+## Browser support
 
-| browser | support |
+| Browser | Support |
 |---|---|
-| Chrome / Edge | ✅ full |
-| Firefox | ✅ full |
-| Safari (iOS + macOS) | ✅ full |
-| Samsung Internet | ✅ full |
+| Chrome / Edge | ✅ Full |
+| Firefox | ✅ Full |
+| Safari (iOS + macOS) | ✅ Full |
+| Samsung Internet | ✅ Full |
 
 Requires Web Audio API — supported in all modern browsers since 2013.
 
 ---
 
-## roadmap
+## Roadmap
 
 - [ ] URL state — share custom patterns via link (e.g. `deepflo.app/?in=5.5&out=7.0`)
 - [ ] PWA support — install to home screen, offline use
@@ -169,7 +169,7 @@ Requires Web Audio API — supported in all modern browsers since 2013.
 
 ---
 
-## contributing
+## Contributing
 
 PRs welcome. Keep it simple — this app's power is that it's one file. Any contribution should respect that philosophy.
 
@@ -183,7 +183,7 @@ git push origin feature/your-idea
 
 ---
 
-## philosophy
+## Philosophy
 
 Most breathing apps are too much. Timers, streaks, subscriptions, notifications, onboarding flows. deepflo does one thing: it counts your breath, plays a sound, and gets out of the way.
 
@@ -191,13 +191,13 @@ The 0.1s precision isn't a gimmick — when you're trying to hit a 5.5s exhale, 
 
 ---
 
-## license
+## License
 
 MIT — use it, fork it, ship it, make it your own.
 
 ---
 
-## acknowledgements
+## Acknowledgements
 
 Inspired by [xhalr.com](https://xhalr.com) by Hamilton Cline — the original, the OG.
 
