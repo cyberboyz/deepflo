@@ -243,6 +243,18 @@
     font-size: .8rem;
     color: var(--muted);
   }
+  .master-vol-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    font-size: .8rem;
+    color: var(--muted);
+    padding: 8px 10px;
+    background: rgba(88,166,255,.06);
+    border: 1px solid rgba(88,166,255,.18);
+    border-radius: 10px;
+  }
 
   /* ── Stage ── */
   .stage {
@@ -675,6 +687,11 @@
     </div>
 
     <div class="controls">
+      <div class="master-vol-row">
+        <span title="Master volume" style="font-size:.9rem">🔊</span>
+        <input type="range" id="masterVolSlider" min="0" max="1" step="0.05" value="1">
+        <span style="font-size:.7rem;color:var(--accent2);font-weight:700">MASTER</span>
+      </div>
       <div class="volume-row">
         <span title="Cue volume" style="font-size:.9rem">🔔</span>
         <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.6">
@@ -746,19 +763,25 @@
 let ctx = null;
 let masterGain = null;
 let sustainGain = null;  // separate bus for pad volume
+let overallGain = null;  // master bus — controls everything
 
 let sustainNodes = [];
 
 function getCtx() {
   if (!ctx) {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    overallGain = ctx.createGain();
+    overallGain.gain.value = parseFloat(document.getElementById('masterVolSlider').value);
+    overallGain.connect(ctx.destination);
+
     masterGain = ctx.createGain();
     masterGain.gain.value = parseFloat(document.getElementById('volSlider').value);
-    masterGain.connect(ctx.destination);
+    masterGain.connect(overallGain);
 
     sustainGain = ctx.createGain();
     sustainGain.gain.value = parseFloat(document.getElementById('sustainSlider').value);
-    sustainGain.connect(ctx.destination);
+    sustainGain.connect(overallGain);
   }
   return ctx;
 }
@@ -1538,7 +1561,7 @@ function setActivePreset(key) {
       const o = ac2.createOscillator();
       const gP = ac2.createGain();
       o.type = 'sine'; o.frequency.value = s.hz;
-      o.connect(gP); gP.connect(masterGain);
+      o.connect(gP); gP.connect(overallGain);
       const t = ac2.currentTime;
       gP.gain.setValueAtTime(0, t);
       gP.gain.linearRampToValueAtTime(parseFloat(document.getElementById('volSlider').value) * 0.42, t + 0.08);
@@ -1576,6 +1599,11 @@ document.querySelectorAll('[data-instr]').forEach(btn => {
       playNote(currentInstr, 'mid');
     }
   });
+});
+
+// Master volume — controls all audio output
+document.getElementById('masterVolSlider').addEventListener('input', e => {
+  if (overallGain) overallGain.gain.value = parseFloat(e.target.value);
 });
 
 // Cue volume
