@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>deepflo — breathe with precision</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>〰️</text></svg>">
 <style>
   :root {
     --bg: #0d1117;
@@ -17,7 +18,40 @@
     --exhale: #f78166;
     --hold: #d2a8ff;
     --radius: 16px;
-    --panel-w: 340px;
+
+    /* Golden ratio (φ = 1.618) — all proportions derived from this */
+    --phi: 1.618;
+
+    /* Panels: right = 260px, left = 260 × φ ≈ 420px (already close, now intentional) */
+    --panel-right: 260px;
+    --panel-left: 421px; /* 260 × 1.618 = 420.68 */
+
+    /* Typography modular scale (base 0.8rem × φ steps) */
+    --text-xs:   0.694rem;  /* 0.8 / φ      ≈ 0.494 → floored up for legibility */
+    --text-sm:   0.764rem;  /* stepping up   */
+    --text-base: 0.875rem;  /* ~14px anchor  */
+    --text-md:   1rem;
+    --text-lg:   1.125rem;  /* 1 × ~φ^0.5   */
+    --text-xl:   1.4rem;    /* logo          */
+    --text-2xl:  2.618rem;  /* 1 × φ²        */
+
+    /* Orb: outer ring = 360px, inner orb = 360 / φ ≈ 222px */
+    --orb-outer: 360px;
+    --orb-inner: 222px; /* 360 / 1.618 */
+
+    /* Scale transforms derived from φ */
+    --scale-inhale: 1.146; /* φ^0.2 ≈ 1.146 */
+    --scale-exhale: 0.882; /* 1/φ^0.2 ≈ 0.882 — reciprocal for symmetry */
+    --scale-hold:   1.090; /* midpoint between rest and inhale */
+    --btn-glow: rgba(34,211,238,.7);
+    --btn-glow-mid: rgba(34,211,238,.95);
+    --btn-glow-soft: rgba(34,211,238,.25);
+    --btn-glow-softer: rgba(34,211,238,.45);
+    --sp-1: 6px;   /* 6               */
+    --sp-2: 10px;  /* 6 × φ  = 9.7   */
+    --sp-3: 16px;  /* 6 × φ² = 15.7  */
+    --sp-4: 26px;  /* 6 × φ³ = 25.4  */
+    --sp-5: 42px;  /* 6 × φ⁴ = 41.1  */
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -35,13 +69,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 28px;
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(10px);
+    padding: 16px 28px;
+    border-bottom: 1px solid rgba(48,54,61,.5);
+    backdrop-filter: blur(16px);
     position: sticky; top: 0; z-index: 10;
-    background: rgba(13,17,23,.85);
+    background: rgba(13,17,23,.75);
   }
-  .logo { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+  .logo { font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.5px; }
   .logo span { color: var(--accent); }
   .header-btns { display: flex; gap: 10px; }
   .icon-btn {
@@ -65,36 +99,49 @@
 
   /* ── Sidebar ── */
   .sidebar {
-    width: var(--panel-w);
-    min-width: var(--panel-w);
-    border-right: 1px solid var(--border);
-    padding: 24px 20px;
+    width: var(--panel-left);
+    min-width: var(--panel-left);
+    border-right: 1px solid rgba(48,54,61,.5);
+    padding: var(--sp-3) var(--sp-4);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 22px;
-    background: var(--surface);
+    gap: var(--sp-4);
+    background: rgba(22,27,34,.7);
+    backdrop-filter: blur(12px);
+  }
+  .sidebar-right {
+    width: var(--panel-right);
+    min-width: var(--panel-right);
+    border-left: 1px solid rgba(48,54,61,.5);
+    padding: var(--sp-3) var(--sp-2);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    background: rgba(22,27,34,.7);
+    backdrop-filter: blur(12px);
   }
   .section-title {
     font-size: .7rem;
     text-transform: uppercase;
     letter-spacing: 1.2px;
     color: var(--muted);
-    margin-bottom: 10px;
+    margin-bottom: var(--sp-2);
   }
   .presets {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
+    gap: var(--sp-1);
   }
   .preset-btn {
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text);
     border-radius: 10px;
-    padding: 10px 8px;
+    padding: var(--sp-1) var(--sp-1);
     cursor: pointer;
-    font-size: .8rem;
+    font-size: .78rem;
     text-align: center;
     transition: all .15s;
     line-height: 1.3;
@@ -108,19 +155,19 @@
   }
 
   /* Sliders */
-  .slider-group { display: flex; flex-direction: column; gap: 14px; }
+  .slider-group { display: flex; flex-direction: column; gap: var(--sp-2); }
   .slider-row {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 10px;
+    gap: var(--sp-2);
   }
   .slider-label {
     font-size: .82rem;
-    margin-bottom: 5px;
+    margin-bottom: var(--sp-1);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--sp-1);
   }
   .dot {
     width: 9px; height: 9px;
@@ -165,19 +212,19 @@
   .instrument-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 7px;
+    gap: var(--sp-1);
   }
   .instr-btn {
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text);
     border-radius: 10px;
-    padding: 10px 4px 8px;
+    padding: var(--sp-2) var(--sp-1) var(--sp-1);
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: var(--sp-1);
     font-size: .68rem;
     transition: all .15s;
   }
@@ -186,12 +233,12 @@
   .instr-btn.active { border-color: var(--accent); background: rgba(88,166,255,.15); color: var(--accent2); }
 
   /* Sound assignment */
-  .sound-assign { display: flex; flex-direction: column; gap: 8px; }
+  .sound-assign { display: flex; flex-direction: column; gap: var(--sp-1); }
   .assign-row {
     display: grid;
     grid-template-columns: auto 1fr 1fr;
     align-items: center;
-    gap: 8px;
+    gap: var(--sp-1);
     font-size: .8rem;
   }
   .assign-label { color: var(--muted); white-space: nowrap; }
@@ -211,11 +258,12 @@
   .controls {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--sp-1);
+    padding-top: var(--sp-1);
   }
   .start-btn {
     width: 100%;
-    padding: 14px;
+    padding: var(--sp-2);
     border-radius: 12px;
     border: none;
     font-size: 1rem;
@@ -223,23 +271,36 @@
     cursor: pointer;
     transition: all .2s;
     letter-spacing: .5px;
+    margin-top: var(--sp-4);
   }
   .start-btn.go {
-    background: linear-gradient(135deg, #238636, #2ea043);
-    color: #fff;
-    box-shadow: 0 4px 20px rgba(46,160,67,.35);
+    background: linear-gradient(135deg, #0ea5c8, #22d3ee);
+    color: #042830;
+    box-shadow: 0 4px 24px var(--btn-glow), 0 0 0 1px rgba(34,211,238,.3), 0 0 60px var(--btn-glow-soft);
+    text-shadow: 0 1px 2px rgba(0,0,0,.15);
+    animation: btn-pulse 2.8s ease-in-out infinite;
   }
-  .start-btn.go:hover { box-shadow: 0 6px 28px rgba(46,160,67,.5); transform: translateY(-1px); }
+  .start-btn.go:hover {
+    background: linear-gradient(135deg, #22d3ee, #67e8f9);
+    box-shadow: 0 6px 38px var(--btn-glow-mid), 0 0 0 2px rgba(34,211,238,.5), 0 0 80px var(--btn-glow-softer);
+    transform: translateY(-2px);
+    animation: none;
+  }
+  @keyframes btn-pulse {
+    0%, 100% { box-shadow: 0 4px 24px var(--btn-glow), 0 0 0 1px rgba(34,211,238,.3), 0 0 60px var(--btn-glow-soft); }
+    50%       { box-shadow: 0 4px 32px var(--btn-glow-mid), 0 0 0 1px rgba(34,211,238,.45), 0 0 90px var(--btn-glow-softer); }
+  }
   .start-btn.stop {
-    background: linear-gradient(135deg, #da3633, #f85149);
+    background: linear-gradient(135deg, #a0183a, #c42050);
     color: #fff;
-    box-shadow: 0 4px 20px rgba(248,81,73,.35);
+    box-shadow: 0 4px 20px rgba(196,32,80,.35);
   }
+  .start-btn.stop:hover { box-shadow: 0 6px 28px rgba(196,32,80,.5); transform: translateY(-1px); }
   .volume-row {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 10px;
+    gap: var(--sp-2);
     font-size: .8rem;
     color: var(--muted);
   }
@@ -247,10 +308,10 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 10px;
+    gap: var(--sp-2);
     font-size: .8rem;
     color: var(--muted);
-    padding: 8px 10px;
+    padding: var(--sp-1) var(--sp-2);
     background: rgba(88,166,255,.06);
     border: 1px solid rgba(88,166,255,.18);
     border-radius: 10px;
@@ -263,42 +324,63 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
-    gap: 32px;
+    padding: 0px 20px 160px;
+    gap: var(--sp-4);
     position: relative;
     overflow: hidden;
+    background:
+      radial-gradient(ellipse 60% 55% at 50% 48%, rgba(88,166,255,.07) 0%, transparent 70%),
+      var(--bg);
+    transition: background 1.2s ease;
   }
 
+  /* Ambient glow that shifts with breathing phase */
+  .stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 50% 45% at 50% 50%, var(--glow-color, transparent) 0%, transparent 65%);
+    transition: background 1.2s ease;
+    pointer-events: none;
+  }
+
+  body { --glow-color: transparent; }
+  body.phase-inhale  { --glow-color: rgba(86,211,100,.06); }
+  body.phase-exhale  { --glow-color: rgba(247,129,102,.05); }
+  body.phase-hold    { --glow-color: rgba(210,168,255,.05); }
+
   .phase-label {
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: 2px;
+    font-size: var(--text-lg);
+    font-weight: 500;
+    letter-spacing: 4px;
     text-transform: uppercase;
     color: var(--muted);
-    transition: color .4s;
+    transition: color .6s, opacity .4s;
     min-height: 1.4em;
+    opacity: 0.7;
   }
 
   /* ── Circle ── */
   .circle-wrap {
     position: relative;
-    width: 280px;
-    height: 280px;
+    width: var(--orb-outer);
+    height: var(--orb-outer);
   }
   .circle-svg {
-    width: 280px; height: 280px;
+    width: var(--orb-outer); height: var(--orb-outer);
     position: absolute;
     top: 0; left: 0;
     transform: rotate(-90deg);
   }
-  .circle-bg { fill: none; stroke: var(--border); stroke-width: 6; }
+  .circle-bg { fill: none; stroke: rgba(48,54,61,.6); stroke-width: 2; }
   .circle-progress {
     fill: none;
-    stroke-width: 6;
+    stroke-width: 2;
     stroke-linecap: round;
     stroke-dasharray: 816;
     stroke-dashoffset: 816;
     transition: stroke .4s;
+    filter: drop-shadow(0 0 4px currentColor);
   }
   .circle-inner {
     position: absolute;
@@ -310,37 +392,46 @@
     gap: 4px;
   }
   .circle-orb {
-    width: 220px; height: 220px;
+    width: var(--orb-inner); height: var(--orb-inner);
     border-radius: 50%;
-    background: radial-gradient(circle at 40% 35%, rgba(88,166,255,.18), rgba(88,166,255,.04) 70%);
-    border: 1.5px solid rgba(88,166,255,.15);
+    background:
+      radial-gradient(circle at 38% 32%, rgba(88,166,255,.22) 0%, rgba(88,166,255,.06) 45%, rgba(88,166,255,.02) 70%),
+      radial-gradient(circle at 65% 72%, rgba(121,192,255,.08) 0%, transparent 50%);
+    border: 1px solid rgba(88,166,255,.22);
+    box-shadow:
+      0 0 0 1px rgba(88,166,255,.06),
+      inset 0 1px 0 rgba(255,255,255,.06),
+      0 8px 40px rgba(0,0,0,.4);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: transform .3s ease, box-shadow .4s, border-color .3s;
+    transition: transform .8s cubic-bezier(.4,0,.2,1), box-shadow .6s ease, border-color .4s;
     cursor: pointer;
     user-select: none;
   }
   .circle-orb:hover {
-    border-color: rgba(88,166,255,.5);
-    box-shadow: 0 0 30px rgba(88,166,255,.15);
+    border-color: rgba(88,166,255,.45);
+    box-shadow: 0 0 50px rgba(88,166,255,.18), inset 0 1px 0 rgba(255,255,255,.06), 0 8px 40px rgba(0,0,0,.4);
   }
   .circle-orb.inhaling {
-    transform: scale(1.15);
-    box-shadow: 0 0 60px rgba(86,211,100,.25), 0 0 20px rgba(86,211,100,.1);
+    transform: scale(var(--scale-inhale));
+    box-shadow: 0 0 80px rgba(86,211,100,.3), 0 0 30px rgba(86,211,100,.15), inset 0 1px 0 rgba(255,255,255,.06);
+    border-color: rgba(86,211,100,.4);
   }
   .circle-orb.exhaling {
-    transform: scale(0.88);
-    box-shadow: 0 0 60px rgba(247,129,102,.2), 0 0 20px rgba(247,129,102,.08);
+    transform: scale(var(--scale-exhale));
+    box-shadow: 0 0 70px rgba(247,129,102,.25), 0 0 25px rgba(247,129,102,.12), inset 0 1px 0 rgba(255,255,255,.04);
+    border-color: rgba(247,129,102,.35);
   }
   .circle-orb.holding {
-    transform: scale(1.1);
-    box-shadow: 0 0 50px rgba(210,168,255,.2);
+    transform: scale(var(--scale-hold));
+    box-shadow: 0 0 60px rgba(210,168,255,.25), 0 0 22px rgba(210,168,255,.1), inset 0 1px 0 rgba(255,255,255,.06);
+    border-color: rgba(210,168,255,.35);
   }
   .circle-time {
-    font-size: 2.8rem;
+    font-size: var(--text-2xl);
     font-weight: 200;
     letter-spacing: -1px;
     line-height: 1;
@@ -357,13 +448,13 @@
   .cycle-row {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: var(--sp-3);
     font-size: .85rem;
     color: var(--muted);
   }
   .cycle-dots {
     display: flex;
-    gap: 6px;
+    gap: var(--sp-1);
   }
   .cycle-dot {
     width: 8px; height: 8px;
@@ -376,7 +467,7 @@
   /* Progress bar (full cycle) */
   .timeline {
     width: 100%;
-    max-width: 460px;
+    max-width: 582px; /* --orb-outer × φ = 360 × 1.618 */
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -409,14 +500,14 @@
   .ripple {
     position: absolute;
     border-radius: 50%;
-    border: 1.5px solid rgba(88,166,255,.08);
+    border: 1px solid rgba(88,166,255,.06);
     pointer-events: none;
-    animation: ripple-out 3s ease-out infinite;
+    animation: ripple-out 4s ease-out infinite;
     opacity: 0;
   }
   @keyframes ripple-out {
-    0% { transform: scale(.8); opacity: .5; }
-    100% { transform: scale(1.8); opacity: 0; }
+    0% { transform: scale(.75); opacity: .55; }
+    100% { transform: scale(2.1); opacity: 0; }
   }
 
   /* Idle state */
@@ -460,21 +551,77 @@
   }
   .freq-preset:hover, .freq-preset.active { border-color: var(--accent); color: var(--accent2); background: rgba(88,166,255,.1); }
 
-  /* Responsive */
-  @media (max-width: 720px) {
-    :root { --panel-w: 100%; }
+  /* ── Drawer toggle button (mobile only) ── */
+  .drawer-btn {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: .8rem;
+    transition: background .15s, border-color .15s;
+  }
+  .drawer-btn:hover { background: var(--border); border-color: var(--accent); }
+
+  /* ── Drawer overlay (mobile only) ── */
+  .drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity .25s;
+    pointer-events: none;
+  }
+  .drawer-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ── Combined drawer panel (mobile only) ── */
+  .drawer {
+    display: none;
+    position: fixed;
+    top: 0; right: 0;
+    width: min(400px, 92vw);
+    height: 100dvh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 100;
+    padding: 20px;
+    overflow-y: auto;
+    flex-direction: column;
+    gap: 22px;
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-close {
+    align-self: flex-end;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: .8rem;
+    margin-bottom: 4px;
+  }
+  .drawer-close:hover { color: var(--text); border-color: var(--accent); }
+
+  @media (max-width: 1000px) {
+    .sidebar, .sidebar-right { display: none !important; }
+    .drawer-btn { display: inline-block; }
+    .drawer-overlay, .drawer { display: flex; }
     main { flex-direction: column; }
-    .sidebar {
-      width: 100%; min-width: 0;
-      border-right: none;
-      border-bottom: 1px solid var(--border);
-      max-height: 55vh;
-    }
-    .stage { padding: 30px 16px; }
-    .circle-wrap, .circle-svg { width: 240px; height: 240px; }
-    .circle-orb { width: 186px; height: 186px; }
-    .circle-svg .circle-bg, .circle-svg .circle-progress { stroke-width: 5; }
-    /* 2πr for r=117 ≈ 735 */
+    .stage { padding: 30px 16px; flex: 1; }
+    .circle-wrap { width: 300px; height: 300px; }
+    .circle-svg  { width: 300px; height: 300px; }
+    .circle-orb  { width: 185px; height: 185px; } /* 300 / φ ≈ 185 */
+    .circle-svg .circle-bg, .circle-svg .circle-progress { stroke-width: 2; }
   }
 </style>
 </head>
@@ -483,13 +630,14 @@
 <header>
   <div class="logo">deep<span>flo</span></div>
   <div class="header-btns">
+    <button class="drawer-btn" id="drawerBtn" title="Settings">⚙ Settings</button>
     <button class="icon-btn" id="themeBtn" title="Toggle theme">☀️ Light</button>
     <button class="icon-btn" id="fullBtn" title="Fullscreen">⛶ Full</button>
   </div>
 </header>
 
 <main>
-  <!-- ── Sidebar ── -->
+  <!-- ── Left Sidebar: Presets + Timing ── -->
   <aside class="sidebar">
 
     <div>
@@ -567,6 +715,74 @@
         </div>
       </div>
     </div>
+
+    <div class="controls">
+      <div class="master-vol-row">
+        <span title="Master volume" style="font-size:.9rem">🔊</span>
+        <input type="range" id="masterVolSlider" min="0" max="1" step="0.05" value="1">
+        <span style="font-size:.7rem;color:var(--accent2);font-weight:700">MASTER</span>
+      </div>
+      <div class="volume-row">
+        <span title="Cue volume" style="font-size:.9rem">🔔</span>
+        <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.6">
+        <span style="font-size:.7rem;color:var(--muted)">CUE</span>
+      </div>
+      <div class="volume-row">
+        <span title="Sustain volume" style="font-size:.9rem">〰️</span>
+        <input type="range" id="sustainSlider" min="0" max="0.25" step="0.005" value="0.06">
+        <span style="font-size:.7rem;color:var(--muted)">PAD</span>
+      </div>
+      <button class="start-btn go" id="startBtn">▶ Start</button>
+    </div>
+
+  </aside>
+
+  <!-- ── Stage ── -->
+  <section class="stage" id="stage">
+    <!-- Ripple layers -->
+    <div class="ripple" style="width:420px;height:420px;animation-delay:0s"></div>
+    <div class="ripple" style="width:420px;height:420px;animation-delay:1.3s"></div>
+    <div class="ripple" style="width:420px;height:420px;animation-delay:2.6s"></div>
+
+    <div class="phase-label" id="phaseLabel">Ready</div>
+
+    <div class="circle-wrap" id="circleWrap">
+      <svg class="circle-svg" viewBox="0 0 280 280">
+        <circle class="circle-bg" cx="140" cy="140" r="130"/>
+        <circle class="circle-progress" id="circleProgress" cx="140" cy="140" r="130"/>
+      </svg>
+      <div class="circle-inner">
+        <div class="circle-orb" id="orb">
+          <div class="circle-time" id="circleTime">—</div>
+          <div class="circle-sublabel" id="circleSub">press start</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cycle-row">
+      <span>Cycle</span>
+      <div class="cycle-dots" id="cycleDots">
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+        <div class="cycle-dot"></div>
+      </div>
+      <span id="cycleCount">0</span>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-bar" id="tlBar"></div>
+      <div class="tl-labels" id="tlLabels"></div>
+    </div>
+
+  </section>
+
+  <!-- ── Right Sidebar: Instrument + Volume + Start ── -->
+  <aside class="sidebar-right">
 
     <div>
       <div class="section-title">Instrument</div>
@@ -686,71 +902,156 @@
       </div>
     </div>
 
-    <div class="controls">
-      <div class="master-vol-row">
-        <span title="Master volume" style="font-size:.9rem">🔊</span>
-        <input type="range" id="masterVolSlider" min="0" max="1" step="0.05" value="1">
-        <span style="font-size:.7rem;color:var(--accent2);font-weight:700">MASTER</span>
-      </div>
-      <div class="volume-row">
-        <span title="Cue volume" style="font-size:.9rem">🔔</span>
-        <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.6">
-        <span style="font-size:.7rem;color:var(--muted)">CUE</span>
-      </div>
-      <div class="volume-row">
-        <span title="Sustain volume" style="font-size:.9rem">〰️</span>
-        <input type="range" id="sustainSlider" min="0" max="0.25" step="0.005" value="0.06">
-        <span style="font-size:.7rem;color:var(--muted)">PAD</span>
-      </div>
-      <button class="start-btn go" id="startBtn">▶ Start</button>
-    </div>
-
   </aside>
 
-  <!-- ── Stage ── -->
-  <section class="stage" id="stage">
-    <!-- Ripple layers -->
-    <div class="ripple" style="width:340px;height:340px;animation-delay:0s"></div>
-    <div class="ripple" style="width:340px;height:340px;animation-delay:1s"></div>
-    <div class="ripple" style="width:340px;height:340px;animation-delay:2s"></div>
+</main>
 
-    <div class="phase-label" id="phaseLabel">Ready</div>
+<!-- ── Mobile Drawer ── -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer-close" id="drawerClose">✕ Close</button>
 
-    <div class="circle-wrap" id="circleWrap">
-      <svg class="circle-svg" viewBox="0 0 280 280">
-        <circle class="circle-bg" cx="140" cy="140" r="130"/>
-        <circle class="circle-progress" id="circleProgress" cx="140" cy="140" r="130"/>
-      </svg>
-      <div class="circle-inner">
-        <div class="circle-orb" id="orb">
-          <div class="circle-time" id="circleTime">—</div>
-          <div class="circle-sublabel" id="circleSub">press start</div>
+  <div>
+    <div class="section-title">Presets</div>
+    <div class="presets">
+      <button class="preset-btn active" data-preset="46"><span class="preset-name">4-6</span><span class="preset-desc">Balance</span></button>
+      <button class="preset-btn" data-preset="37"><span class="preset-name">3-7</span><span class="preset-desc">Deep calm</span></button>
+      <button class="preset-btn" data-preset="478"><span class="preset-name">4-7-8</span><span class="preset-desc">Relaxation</span></button>
+      <button class="preset-btn" data-preset="box"><span class="preset-name">Box</span><span class="preset-desc">4-4-4-4</span></button>
+      <button class="preset-btn" data-preset="calm"><span class="preset-name">Calm</span><span class="preset-desc">5-0-5-0</span></button>
+      <button class="preset-btn" data-preset="wim"><span class="preset-name">Wim Hof</span><span class="preset-desc">2-0-2-0</span></button>
+      <button class="preset-btn" data-preset="deep"><span class="preset-name">Deep</span><span class="preset-desc">6-2-8-0</span></button>
+      <button class="preset-btn" data-preset="resonance"><span class="preset-name">Resonance</span><span class="preset-desc">5.5-0-5.5-0</span></button>
+      <button class="preset-btn" data-preset="custom"><span class="preset-name">Custom</span><span class="preset-desc">→ sliders</span></button>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title">Timing (0.1 s precision)</div>
+    <div class="slider-group">
+      <div>
+        <div class="slider-label"><span class="dot dot-in"></span>Inhale</div>
+        <div class="slider-row">
+          <input type="range" id="sIn_d" min="0.5" max="20" step="0.1" value="4">
+          <span class="slider-val" id="vIn_d">4.0 s</span>
+        </div>
+      </div>
+      <div>
+        <div class="slider-label"><span class="dot dot-hold"></span>Hold In</div>
+        <div class="slider-row">
+          <input type="range" id="sHold1_d" min="0" max="20" step="0.1" value="0">
+          <span class="slider-val" id="vHold1_d">0.0 s</span>
+        </div>
+      </div>
+      <div>
+        <div class="slider-label"><span class="dot dot-out"></span>Exhale</div>
+        <div class="slider-row">
+          <input type="range" id="sOut_d" min="0.5" max="20" step="0.1" value="6">
+          <span class="slider-val" id="vOut_d">6.0 s</span>
+        </div>
+      </div>
+      <div>
+        <div class="slider-label"><span class="dot dot-hold2"></span>Hold Out</div>
+        <div class="slider-row">
+          <input type="range" id="sHold2_d" min="0" max="20" step="0.1" value="0">
+          <span class="slider-val" id="vHold2_d">0.0 s</span>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="cycle-row">
-      <span>Cycle</span>
-      <div class="cycle-dots" id="cycleDots">
-        <div class="cycle-dot"></div>
-        <div class="cycle-dot"></div>
-        <div class="cycle-dot"></div>
-        <div class="cycle-dot"></div>
-        <div class="cycle-dot"></div>
-        <div class="cycle-dot"></div>
-        <div class="cycle-dot"></div>
-        <div class="cycle-dot"></div>
+  <div>
+    <div class="section-title">Instrument</div>
+    <div class="instrument-grid">
+      <button class="instr-btn active" data-instr="solfeggio"><span class="emoji">🔮</span>Solfeggio</button>
+      <button class="instr-btn" data-instr="sine"><span class="emoji">〰️</span>Sine Tone</button>
+      <button class="instr-btn" data-instr="bell"><span class="emoji">🔔</span>Bell</button>
+      <button class="instr-btn" data-instr="bowl"><span class="emoji">🎵</span>Singing Bowl</button>
+      <button class="instr-btn" data-instr="flute"><span class="emoji">🪈</span>Flute</button>
+      <button class="instr-btn" data-instr="chime"><span class="emoji">✨</span>Wind Chime</button>
+      <button class="instr-btn" data-instr="drone"><span class="emoji">🌊</span>Ocean Drone</button>
+      <button class="instr-btn" data-instr="whisper"><span class="emoji">🌬️</span>Breath</button>
+      <button class="instr-btn" data-instr="harp"><span class="emoji">🎶</span>Harp Glide</button>
+      <button class="instr-btn" data-instr="piano"><span class="emoji">🎹</span>Piano</button>
+      <button class="instr-btn" data-instr="guitar"><span class="emoji">🎸</span>Guitar</button>
+      <button class="instr-btn" data-instr="drum"><span class="emoji">🎛️</span>Pad Synth</button>
+      <button class="instr-btn" data-instr="custom_freq"><span class="emoji">🎛️</span>Custom Hz</button>
+      <button class="instr-btn" data-instr="theremin"><span class="emoji">🌀</span>Theremin</button>
+      <button class="instr-btn" data-instr="none"><span class="emoji">🔕</span>Silent</button>
+    </div>
+    <div id="solfeggioPanel_d" style="display:block;margin-top:10px;">
+      <div class="section-title" style="margin-bottom:6px;">Solfeggio frequency</div>
+      <div style="display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px 10px;margin-bottom:8px;">
+        <span style="font-size:.75rem;color:var(--inhale);">↑ Inhale</span>
+        <select id="solfIn_d" style="font-size:.75rem;padding:4px 6px;"></select>
+        <span style="font-size:.75rem;color:var(--exhale);">↓ Exhale</span>
+        <select id="solfOut_d" style="font-size:.75rem;padding:4px 6px;"></select>
       </div>
-      <span id="cycleCount">0</span>
+      <div class="section-title" style="margin-bottom:6px;margin-top:4px;">Preview</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;" id="solfGrid_d"></div>
     </div>
-
-    <div class="timeline">
-      <div class="timeline-bar" id="tlBar"></div>
-      <div class="tl-labels" id="tlLabels"></div>
+    <div id="customFreqPanel_d" style="display:none;margin-top:10px;">
+      <div class="section-title" style="margin-bottom:6px;">Custom frequency (Hz)</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="font-size:.72rem;color:var(--inhale);margin-bottom:4px;">↑ Inhale</div>
+          <div class="slider-row">
+            <input type="range" id="customFreqSlider_d" min="20" max="2000" step="1" value="432">
+            <span class="slider-val" id="customFreqVal_d">432 Hz</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;color:var(--exhale);margin-bottom:4px;">↓ Exhale</div>
+          <div class="slider-row">
+            <input type="range" id="customFreqSliderOut_d" min="20" max="2000" step="1" value="396">
+            <span class="slider-val" id="customFreqValOut_d">396 Hz</span>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-  </section>
-</main>
+  <div>
+    <div class="section-title">Sound Assignment</div>
+    <div class="sound-assign">
+      <div class="assign-row">
+        <span class="dot dot-in" style="margin-top:1px"></span>
+        <span class="assign-label">Inhale cue</span>
+        <select id="cueIn_d"><option value="high">High note</option><option value="mid">Mid note</option><option value="low">Low note</option></select>
+      </div>
+      <div class="assign-row">
+        <span class="dot dot-out" style="margin-top:1px"></span>
+        <span class="assign-label">Exhale cue</span>
+        <select id="cueOut_d"><option value="high">High note</option><option value="mid" selected>Mid note</option><option value="low">Low note</option></select>
+      </div>
+      <div class="assign-row">
+        <span class="dot dot-hold" style="margin-top:1px"></span>
+        <span class="assign-label">Hold cue</span>
+        <select id="cueHold_d"><option value="high">High note</option><option value="mid">Mid note</option><option value="low" selected>Low note</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="master-vol-row">
+      <span style="font-size:.9rem">🔊</span>
+      <input type="range" id="masterVolSlider_d" min="0" max="1" step="0.05" value="1">
+      <span style="font-size:.7rem;color:var(--accent2);font-weight:700">MASTER</span>
+    </div>
+    <div class="volume-row">
+      <span style="font-size:.9rem">🔔</span>
+      <input type="range" id="volSlider_d" min="0" max="1" step="0.05" value="0.6">
+      <span style="font-size:.7rem;color:var(--muted)">CUE</span>
+    </div>
+    <div class="volume-row">
+      <span style="font-size:.9rem">〰️</span>
+      <input type="range" id="sustainSlider_d" min="0" max="0.25" step="0.005" value="0.06">
+      <span style="font-size:.7rem;color:var(--muted)">PAD</span>
+    </div>
+    <button class="start-btn go" id="startBtn_d">▶ Start</button>
+  </div>
+
+</div>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -1392,6 +1693,9 @@ function startPhase(idx) {
   document.getElementById('phaseLabel').style.color    = p.color;
   document.getElementById('circleSub').textContent     = p.label;
   document.getElementById('circleProgress').style.stroke = p.color;
+  // Ambient body glow
+  document.body.className = document.body.className.replace(/phase-\w+/g, '').trim();
+  if (p.name !== 'rest') document.body.classList.add('phase-' + p.name);
 
   // Schedule next phase transition via setTimeout (works in background)
   // Add a tiny buffer (50ms) to prevent drift accumulation
@@ -1449,6 +1753,7 @@ function stopSession() {
   document.getElementById('orb').className                 = 'circle-orb';
   document.getElementById('phaseLabel').textContent        = 'Paused';
   document.getElementById('phaseLabel').style.color        = '';
+  document.body.className = document.body.className.replace(/phase-\w+/g, '').trim();
   document.getElementById('circleTime').textContent        = '—';
   document.getElementById('circleSub').textContent         = 'press start';
   document.getElementById('circleProgress').style.strokeDashoffset = CIRCUMFERENCE;
@@ -1623,9 +1928,26 @@ document.getElementById('themeBtn').addEventListener('click', () => {
   if (lightMode) {
     document.documentElement.style.setProperty('--bg',      '#f0f4f8');
     document.documentElement.style.setProperty('--surface', '#ffffff');
-    document.documentElement.style.setProperty('--border',  '#d0d7de');
-    document.documentElement.style.setProperty('--text',    '#24292f');
-    document.documentElement.style.setProperty('--muted',   '#57606a');
+    document.documentElement.style.setProperty('--border',  '#d0d9e4');
+    document.documentElement.style.setProperty('--text',    '#0f1923');
+    document.documentElement.style.setProperty('--muted',   '#6b7a8d');
+    document.documentElement.style.setProperty('--accent',  '#1a6fd4');
+    document.documentElement.style.setProperty('--accent2', '#1558b0');
+    document.documentElement.style.setProperty('--inhale',  '#1a8c3a');
+    document.documentElement.style.setProperty('--exhale',  '#c0402a');
+    document.documentElement.style.setProperty('--hold',    '#6b35b8');
+    document.querySelector('header').style.background = 'rgba(240,244,248,.88)';
+    document.querySelector('header').style.borderBottomColor = 'rgba(208,217,228,.7)';
+    document.querySelectorAll('.sidebar, .sidebar-right').forEach(el => {
+      el.style.background = 'rgba(255,255,255,.75)';
+      el.style.borderColor = 'rgba(208,217,228,.6)';
+    });
+    document.querySelector('.stage').style.background =
+      'radial-gradient(ellipse 60% 55% at 50% 48%, rgba(26,111,212,.06) 0%, transparent 70%), #f0f4f8';
+    document.documentElement.style.setProperty('--btn-glow',        'rgba(6,140,160,.9)');
+    document.documentElement.style.setProperty('--btn-glow-mid',    'rgba(6,140,160,1)');
+    document.documentElement.style.setProperty('--btn-glow-soft',   'rgba(6,140,160,.35)');
+    document.documentElement.style.setProperty('--btn-glow-softer', 'rgba(6,140,160,.55)');
     document.getElementById('themeBtn').textContent = '🌙 Dark';
   } else {
     document.documentElement.style.setProperty('--bg',      '#0d1117');
@@ -1633,6 +1955,22 @@ document.getElementById('themeBtn').addEventListener('click', () => {
     document.documentElement.style.setProperty('--border',  '#30363d');
     document.documentElement.style.setProperty('--text',    '#e6edf3');
     document.documentElement.style.setProperty('--muted',   '#8b949e');
+    document.documentElement.style.setProperty('--accent',  '#58a6ff');
+    document.documentElement.style.setProperty('--accent2', '#79c0ff');
+    document.documentElement.style.setProperty('--inhale',  '#56d364');
+    document.documentElement.style.setProperty('--exhale',  '#f78166');
+    document.documentElement.style.setProperty('--hold',    '#d2a8ff');
+    document.querySelector('header').style.background = '';
+    document.querySelector('header').style.borderBottomColor = '';
+    document.querySelectorAll('.sidebar, .sidebar-right').forEach(el => {
+      el.style.background = '';
+      el.style.borderColor = '';
+    });
+    document.querySelector('.stage').style.background = '';
+    document.documentElement.style.setProperty('--btn-glow',        'rgba(34,211,238,.7)');
+    document.documentElement.style.setProperty('--btn-glow-mid',    'rgba(34,211,238,.95)');
+    document.documentElement.style.setProperty('--btn-glow-soft',   'rgba(34,211,238,.25)');
+    document.documentElement.style.setProperty('--btn-glow-softer', 'rgba(34,211,238,.45)');
     document.getElementById('themeBtn').textContent = '☀️ Light';
   }
 });
@@ -1645,6 +1983,331 @@ document.getElementById('fullBtn').addEventListener('click', () => {
 
 // Init
 renderTimeline();
+
+// ═══════════════════════════════════════════════
+//  Mobile Drawer
+// ═══════════════════════════════════════════════
+const drawer        = document.getElementById('drawer');
+const drawerOverlay = document.getElementById('drawerOverlay');
+
+function openDrawer()  { drawer.classList.add('open'); drawerOverlay.classList.add('open'); document.body.style.overflow='hidden'; }
+function closeDrawer() { drawer.classList.remove('open'); drawerOverlay.classList.remove('open'); document.body.style.overflow=''; }
+
+document.getElementById('drawerBtn').addEventListener('click', openDrawer);
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+drawerOverlay.addEventListener('click', closeDrawer);
+
+// ── Helper: sync a drawer control → desktop control ──
+function syncToDesktop(drawerId, desktopId) {
+  const d = document.getElementById(drawerId);
+  const k = document.getElementById(desktopId);
+  if (!d || !k) return;
+  d.addEventListener('input', () => {
+    k.value = d.value;
+    k.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  d.addEventListener('change', () => {
+    k.value = d.value;
+    k.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+function syncToDrawer(desktopId, drawerId) {
+  const d = document.getElementById(drawerId);
+  const k = document.getElementById(desktopId);
+  if (!d || !k) return;
+  k.addEventListener('input',  () => { d.value = k.value; });
+  k.addEventListener('change', () => { d.value = k.value; });
+}
+
+// Timing sliders — drawer controls desktop
+['sIn','sHold1','sOut','sHold2'].forEach(id => {
+  syncToDesktop(id + '_d', id);
+  syncToDrawer(id, id + '_d');
+});
+// Also update drawer val labels when drawer sliders move
+['sIn','sHold1','sOut','sHold2'].forEach((id, i) => {
+  const valId = ['vIn','vHold1','vOut','vHold2'][i];
+  document.getElementById(id + '_d').addEventListener('input', e => {
+    document.getElementById(valId + '_d').textContent = parseFloat(e.target.value).toFixed(1) + ' s';
+  });
+});
+
+// Volume sliders
+syncToDesktop('masterVolSlider_d', 'masterVolSlider');
+syncToDesktop('volSlider_d',       'volSlider');
+syncToDesktop('sustainSlider_d',   'sustainSlider');
+syncToDrawer('masterVolSlider', 'masterVolSlider_d');
+syncToDrawer('volSlider',       'volSlider_d');
+syncToDrawer('sustainSlider',   'sustainSlider_d');
+
+// Sound assignment selects
+syncToDesktop('cueIn_d',   'cueIn');
+syncToDesktop('cueOut_d',  'cueOut');
+syncToDesktop('cueHold_d', 'cueHold');
+syncToDrawer('cueIn',   'cueIn_d');
+syncToDrawer('cueOut',  'cueOut_d');
+syncToDrawer('cueHold', 'cueHold_d');
+
+// Custom freq sliders
+syncToDesktop('customFreqSlider_d',    'customFreqSlider');
+syncToDesktop('customFreqSliderOut_d', 'customFreqSliderOut');
+syncToDrawer('customFreqSlider',    'customFreqSlider_d');
+syncToDrawer('customFreqSliderOut', 'customFreqSliderOut_d');
+document.getElementById('customFreqSlider_d').addEventListener('input', e => {
+  document.getElementById('customFreqVal_d').textContent = parseInt(e.target.value) + ' Hz';
+});
+document.getElementById('customFreqSliderOut_d').addEventListener('input', e => {
+  document.getElementById('customFreqValOut_d').textContent = parseInt(e.target.value) + ' Hz';
+});
+
+// Presets — drawer preset buttons update desktop controls too
+document.querySelectorAll('#drawer [data-preset]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Update drawer slider displays
+    const id_map = {sIn:'sIn_d', sHold1:'sHold1_d', sOut:'sOut_d', sHold2:'sHold2_d'};
+    const val_map = {vIn:'vIn_d', vHold1:'vHold1_d', vOut:'vOut_d', vHold2:'vHold2_d'};
+    const key = btn.dataset.preset;
+    if (key !== 'custom') {
+      const p = PRESETS[key];
+      document.getElementById('sIn_d').value    = p.inS;
+      document.getElementById('sHold1_d').value = p.h1;
+      document.getElementById('sOut_d').value   = p.outS;
+      document.getElementById('sHold2_d').value = p.h2;
+      document.getElementById('vIn_d').textContent    = p.inS.toFixed(1)  + ' s';
+      document.getElementById('vHold1_d').textContent = p.h1.toFixed(1)   + ' s';
+      document.getElementById('vOut_d').textContent   = p.outS.toFixed(1) + ' s';
+      document.getElementById('vHold2_d').textContent = p.h2.toFixed(1)   + ' s';
+    }
+    // Keep active state in sync inside drawer
+    document.querySelectorAll('#drawer [data-preset]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Instruments — drawer instrument buttons
+document.querySelectorAll('#drawer [data-instr]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#drawer [data-instr]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // Mirror to desktop
+    const desktopBtn = document.querySelector(`.sidebar-right [data-instr="${btn.dataset.instr}"]`);
+    if (desktopBtn) desktopBtn.click();
+    // Show/hide sub-panels in drawer
+    document.getElementById('solfeggioPanel_d').style.display  = btn.dataset.instr === 'solfeggio'   ? 'block' : 'none';
+    document.getElementById('customFreqPanel_d').style.display = btn.dataset.instr === 'custom_freq' ? 'block' : 'none';
+  });
+});
+
+// Solfeggio selects in drawer
+(function buildDrawerSolfPanel() {
+  const solfIn_d  = document.getElementById('solfIn_d');
+  const solfOut_d = document.getElementById('solfOut_d');
+  const grid_d    = document.getElementById('solfGrid_d');
+  SOLFEGGIO.forEach(s => {
+    [solfIn_d, solfOut_d].forEach(sel => {
+      const opt = document.createElement('option');
+      opt.value = s.hz; opt.textContent = s.hz + ' Hz — ' + s.name;
+      sel.appendChild(opt);
+    });
+    const btn = document.createElement('button');
+    btn.className = 'solf-btn';
+    btn.innerHTML = '<span class="solf-hz">' + s.hz + ' Hz</span><span class="solf-name">' + s.name + '</span>';
+    btn.addEventListener('click', () => {
+      btn.classList.add('flash');
+      setTimeout(() => btn.classList.remove('flash'), 500);
+      const desktopGrid = document.querySelector('#solfGrid [data-hz="' + s.hz + '"]');
+      if (desktopGrid) desktopGrid.click();
+      else {
+        getCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+        const o = ctx.createOscillator(); const gP = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = s.hz;
+        o.connect(gP); gP.connect(overallGain);
+        const t = ctx.currentTime;
+        gP.gain.setValueAtTime(0, t);
+        gP.gain.linearRampToValueAtTime(parseFloat(document.getElementById('volSlider').value) * 0.42, t + 0.08);
+        gP.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
+        o.start(t); o.stop(t + 3.0);
+      }
+    });
+    grid_d.appendChild(btn);
+  });
+  syncToDesktop('solfIn_d',  'solfIn');
+  syncToDesktop('solfOut_d', 'solfOut');
+  syncToDrawer('solfIn',  'solfIn_d');
+  syncToDrawer('solfOut', 'solfOut_d');
+  solfIn_d.value  = document.getElementById('solfIn').value;
+  solfOut_d.value = document.getElementById('solfOut').value;
+})();
+
+// Start button in drawer
+document.getElementById('startBtn_d').addEventListener('click', () => {
+  running ? stopSession() : startSession();
+});
+// Keep drawer start btn label in sync
+const origStart = startSession;
+const origStop  = stopSession;
+function syncDrawerStartBtn() {
+  const btn = document.getElementById('startBtn_d');
+  if (running) { btn.textContent = '■ Stop'; btn.className = 'start-btn stop'; }
+  else         { btn.textContent = '▶ Start'; btn.className = 'start-btn go'; }
+}
+// Patch start/stop to also update drawer button
+const _startSession = startSession;
+const _stopSession  = stopSession;
+document.getElementById('startBtn').addEventListener('click', () => syncDrawerStartBtn());
+document.getElementById('orb').addEventListener('click',      () => setTimeout(syncDrawerStartBtn, 0));
+document.getElementById('startBtn_d').addEventListener('click', () => setTimeout(syncDrawerStartBtn, 50));
+
+// ═══════════════════════════════════════════════
+//  Scroll gestures — horizontal swipe controls
+//  • Stage:        left/right → master volume
+//  • Left sidebar: left/right → control under cursor
+//    (presets zone → nothing, timing zone → hovered slider,
+//     volume zone → master vol, cue vol, pad vol by row)
+// ═══════════════════════════════════════════════
+(function() {
+
+  // ── Shared toast ──
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position:fixed; bottom:32px; left:50%; transform:translateX(-50%);
+    background:rgba(22,27,34,.92); border:1px solid rgba(88,166,255,.3);
+    color:#e6edf3; padding:8px 18px; border-radius:20px;
+    font-size:.85rem; font-weight:600; letter-spacing:.5px;
+    pointer-events:none; opacity:0; transition:opacity .2s;
+    z-index:200;
+  `;
+  document.body.appendChild(toast);
+  let toastTimer = null;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 1200);
+  }
+
+  // ── Clamp & set a range input, fire its event ──
+  function setSlider(el, val) {
+    if (!el) return;
+    const mn = parseFloat(el.min), mx = parseFloat(el.max);
+    el.value = Math.min(mx, Math.max(mn, val));
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  // ── Vol toast helper ──
+  function volToast(val) {
+    const pct = Math.round(Math.min(1, Math.max(0, val)) * 100);
+    const icon = pct === 0 ? '🔇' : pct < 40 ? '🔈' : pct < 75 ? '🔉' : '🔊';
+    showToast(icon + '  ' + pct + '%');
+  }
+
+  // ── Stage: horizontal swipe → master volume ──
+  const stage = document.getElementById('stage');
+  stage.addEventListener('wheel', e => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    // reversed: swipe right = louder
+    const delta = -e.deltaX * 0.004;
+    const sl = document.getElementById('masterVolSlider');
+    const newVal = parseFloat(sl.value) + delta;
+    setSlider(sl, newVal);
+    if (overallGain) overallGain.gain.value = parseFloat(sl.value);
+    const sl_d = document.getElementById('masterVolSlider_d');
+    if (sl_d) sl_d.value = sl.value;
+    volToast(parseFloat(sl.value));
+  }, { passive: false });
+
+  // ── Left sidebar: horizontal swipe → context-aware control ──
+  const sidebar = document.querySelector('.sidebar');
+  let cursorY = 0; // track mouse position within sidebar
+  sidebar.addEventListener('mousemove', e => { cursorY = e.clientY; });
+
+  // Find which logical section the cursor is in
+  function getSidebarZone() {
+    // Check each section div in sidebar by bounding rect
+    const sections = sidebar.querySelectorAll(':scope > div');
+    for (const sec of sections) {
+      const r = sec.getBoundingClientRect();
+      if (cursorY >= r.top && cursorY <= r.bottom) return sec;
+    }
+    return null;
+  }
+
+  sidebar.addEventListener('wheel', e => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    const delta = -e.deltaX * 0.004; // reversed: right = more
+
+    const zone = getSidebarZone();
+    if (!zone) return;
+
+    const title = zone.querySelector('.section-title');
+    const label = title ? title.textContent.trim().toLowerCase() : '';
+
+    if (label.startsWith('timing')) {
+      // Find the slider-row the cursor is hovering over
+      const rows = zone.querySelectorAll('.slider-row');
+      let targetSlider = null;
+      let targetLabel = '';
+      for (const row of rows) {
+        const r = row.getBoundingClientRect();
+        if (cursorY >= r.top - 20 && cursorY <= r.bottom + 20) {
+          targetSlider = row.querySelector('input[type=range]');
+          const lbl = row.closest('div').querySelector('.slider-label');
+          targetLabel = lbl ? lbl.textContent.trim() : '';
+          break;
+        }
+      }
+      if (!targetSlider) return;
+      const step = parseFloat(targetSlider.step) || 0.1;
+      const range = parseFloat(targetSlider.max) - parseFloat(targetSlider.min);
+      setSlider(targetSlider, parseFloat(targetSlider.value) + delta * range * 0.5);
+      showToast('⏱ ' + targetLabel + ': ' + parseFloat(targetSlider.value).toFixed(1) + ' s');
+      // Sync drawer counterpart
+      const dId = targetSlider.id + '_d';
+      const dEl = document.getElementById(dId);
+      if (dEl) { dEl.value = targetSlider.value; document.getElementById(dEl.id.replace('sIn_d','vIn_d').replace('sHold1_d','vHold1_d').replace('sOut_d','vOut_d').replace('sHold2_d','vHold2_d')) && (document.getElementById(dEl.id.replace(/^s/,'v'))  && (document.getElementById(dEl.id.replace(/^s/,'v')).textContent = parseFloat(targetSlider.value).toFixed(1) + ' s')); }
+      renderTimeline();
+    }
+    else if (zone.querySelector('.master-vol-row, .volume-row')) {
+      // Controls zone — which volume row is hovered?
+      const rows = zone.querySelectorAll('.master-vol-row, .volume-row');
+      let targetSlider = null, rowLabel = '';
+      for (const row of rows) {
+        const r = row.getBoundingClientRect();
+        if (cursorY >= r.top - 10 && cursorY <= r.bottom + 10) {
+          targetSlider = row.querySelector('input[type=range]');
+          // Last span that has text content (skip emoji spans)
+          const spans = row.querySelectorAll('span');
+          for (let i = spans.length - 1; i >= 0; i--) {
+            const t = spans[i].textContent.trim();
+            if (t.length > 0 && t.length < 10 && !/\p{Emoji}/u.test(t)) { rowLabel = t; break; }
+          }
+          break;
+        }
+      }
+      if (!targetSlider) return;
+      const oldVal = parseFloat(targetSlider.value);
+      const maxVal = parseFloat(targetSlider.max);
+      // Normalize delta to 0-1 scale relative to slider max
+      const normDelta = delta * (maxVal <= 1 ? 1 : maxVal);
+      setSlider(targetSlider, oldVal + normDelta);
+      // Apply audio
+      if (targetSlider.id === 'masterVolSlider' && overallGain) overallGain.gain.value = parseFloat(targetSlider.value);
+      if (targetSlider.id === 'volSlider'       && masterGain)  masterGain.gain.value  = parseFloat(targetSlider.value);
+      if (targetSlider.id === 'sustainSlider'   && sustainGain) sustainGain.gain.value = parseFloat(targetSlider.value);
+      // Sync drawer
+      const dEl = document.getElementById(targetSlider.id + '_d');
+      if (dEl) dEl.value = targetSlider.value;
+      // Toast: normalise to 0-100% based on slider max
+      const pct = Math.round((parseFloat(targetSlider.value) / maxVal) * 100);
+      const icon = pct === 0 ? '🔇' : pct < 40 ? '🔈' : pct < 75 ? '🔉' : '🔊';
+      showToast(icon + '  ' + (rowLabel || 'VOL') + ': ' + pct + '%');
+    }
+  }, { passive: false });
+
+})();
 </script>
 </body>
 </html>
